@@ -1,0 +1,944 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Health Risk Lens — Project Report</title>
+<style>
+  @page { size: A4; margin: 20mm 18mm 18mm 18mm; }
+
+  :root {
+    --ink:      #16202B;
+    --muted:    #4A5563;
+    --faint:    #6B7684;
+    --accent:   #2B4C8C;
+    --rule:     #D7DCE3;
+    --ground:   #F6F7F9;
+    --low:      #12805C;
+    --moderate: #C77A16;
+    --high:     #C6304A;
+  }
+
+  * { box-sizing: border-box; }
+
+  html { font-size: 10.5pt; }
+
+  body {
+    margin: 0;
+    color: var(--ink);
+    font-family: Georgia, 'Times New Roman', serif;
+    line-height: 1.58;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  h1, h2, h3, h4, .sans {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  }
+
+  /* ---------- title page ---------- */
+
+  .title-page {
+    height: 245mm;
+    display: flex;
+    flex-direction: column;
+    page-break-after: always;
+  }
+
+  .title-rule { height: 4px; background: var(--accent); width: 64px; }
+
+  .title-eyebrow {
+    margin-top: 14mm;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    font-size: 10pt;
+    letter-spacing: 0.02em;
+    color: var(--muted);
+  }
+
+  h1 {
+    font-size: 30pt;
+    line-height: 1.12;
+    letter-spacing: -0.02em;
+    font-weight: 600;
+    margin: 6mm 0 0;
+    max-width: 15cm;
+  }
+
+  .title-sub {
+    margin-top: 5mm;
+    font-size: 12pt;
+    line-height: 1.5;
+    color: var(--muted);
+    max-width: 13cm;
+  }
+
+  .title-spacer { flex: 1; }
+
+  .meta {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    font-size: 9.5pt;
+  }
+
+  .meta th, .meta td {
+    text-align: left;
+    padding: 2.4mm 0;
+    border-top: 1px solid var(--rule);
+    vertical-align: top;
+  }
+
+  .meta th { width: 38mm; font-weight: 600; color: var(--muted); }
+
+  .disclaimer-box {
+    margin-top: 8mm;
+    border: 1px solid #E6D9A8;
+    background: #FDF8E7;
+    padding: 4mm 5mm;
+    font-size: 9.5pt;
+    line-height: 1.5;
+  }
+
+  .disclaimer-box strong { color: #7A5A0B; }
+
+  /* ---------- contents ---------- */
+
+  .toc { page-break-after: always; }
+
+  .toc ol { list-style: none; padding: 0; margin: 0; counter-reset: sec; }
+
+  .toc > ol > li {
+    counter-increment: sec;
+    border-bottom: 1px solid var(--rule);
+    padding: 2.2mm 0;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    font-size: 10pt;
+  }
+
+  .toc > ol > li::before {
+    content: counter(sec) ".";
+    display: inline-block;
+    width: 9mm;
+    color: var(--accent);
+    font-weight: 600;
+  }
+
+  .toc .sub {
+    display: block;
+    margin: 1mm 0 0 9mm;
+    font-size: 9pt;
+    color: var(--faint);
+    font-family: Georgia, serif;
+  }
+
+  /* ---------- sections ---------- */
+
+  section { page-break-inside: auto; }
+
+  h2 {
+    font-size: 15pt;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    margin: 9mm 0 3mm;
+    padding-bottom: 2mm;
+    border-bottom: 2px solid var(--accent);
+    page-break-after: avoid;
+  }
+
+  h2 .num { color: var(--accent); margin-right: 3mm; }
+
+  h3 {
+    font-size: 11.5pt;
+    font-weight: 600;
+    margin: 6mm 0 2mm;
+    color: var(--ink);
+    page-break-after: avoid;
+  }
+
+  p { margin: 0 0 3.2mm; text-align: justify; hyphens: auto; }
+
+  ul, ol.body-list { margin: 0 0 3.5mm; padding-left: 6mm; }
+  li { margin-bottom: 1.6mm; }
+
+  strong { font-weight: 700; }
+
+  code {
+    font-family: Consolas, 'Courier New', monospace;
+    font-size: 9pt;
+    background: var(--ground);
+    padding: 0.3mm 1.2mm;
+    border-radius: 2px;
+  }
+
+  /* ---------- tables ---------- */
+
+  table.data {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 3mm 0 4mm;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    font-size: 8.8pt;
+    page-break-inside: avoid;
+  }
+
+  table.data caption {
+    caption-side: bottom;
+    text-align: left;
+    font-family: Georgia, serif;
+    font-size: 8.5pt;
+    font-style: italic;
+    color: var(--faint);
+    padding-top: 1.8mm;
+  }
+
+  table.data th {
+    text-align: left;
+    font-weight: 600;
+    background: var(--ground);
+    border-top: 1px solid var(--ink);
+    border-bottom: 1px solid var(--rule);
+    padding: 2mm 2.5mm;
+  }
+
+  table.data td {
+    padding: 2mm 2.5mm;
+    border-bottom: 1px solid var(--rule);
+    vertical-align: top;
+  }
+
+  table.data tr:last-child td { border-bottom: 1px solid var(--ink); }
+
+  .num-col { text-align: right; font-variant-numeric: tabular-nums; }
+
+  .band-low      { color: var(--low);      font-weight: 600; }
+  .band-moderate { color: var(--moderate); font-weight: 600; }
+  .band-high     { color: var(--high);     font-weight: 600; }
+
+  /* ---------- figures ---------- */
+
+  figure {
+    margin: 4mm 0 5mm;
+    page-break-inside: avoid;
+  }
+
+  figure img {
+    width: 100%;
+    display: block;
+    border: 1px solid var(--rule);
+  }
+
+  /* The phone capture is portrait; at full column width it would stand three
+     pages tall. Constrain it and centre it instead. */
+  figure.portrait img {
+    width: auto;
+    max-width: 62mm;
+    max-height: 134mm;
+    margin: 0 auto;
+  }
+
+  figcaption {
+    margin-top: 2mm;
+    font-size: 8.5pt;
+    font-style: italic;
+    color: var(--faint);
+    line-height: 1.45;
+  }
+
+  figcaption b { font-style: normal; font-weight: 600; color: var(--muted); }
+
+  /* ---------- callouts ---------- */
+
+  .callout {
+    border-left: 3px solid var(--accent);
+    background: var(--ground);
+    padding: 3mm 4mm;
+    margin: 3.5mm 0 4mm;
+    font-size: 9.5pt;
+    page-break-inside: avoid;
+  }
+
+  .callout p:last-child { margin-bottom: 0; }
+
+  .arch {
+    font-family: Consolas, 'Courier New', monospace;
+    font-size: 8.2pt;
+    line-height: 1.5;
+    background: var(--ground);
+    border: 1px solid var(--rule);
+    padding: 4mm;
+    margin: 3mm 0 4mm;
+    white-space: pre;
+    page-break-inside: avoid;
+  }
+
+  .end-rule { border: 0; border-top: 2px solid var(--accent); margin: 8mm 0 3mm; }
+</style>
+</head>
+<body>
+
+<!-- ============ TITLE PAGE ============ -->
+<div class="title-page">
+  <div class="title-rule"></div>
+  <p class="title-eyebrow">Project Report</p>
+
+  <h1>Health Risk Lens</h1>
+
+  <p class="title-sub">
+    An explainable, rule-based screening dashboard that estimates risk for three chronic
+    conditions, accounts for every point it awards, and simulates the effect of a change in
+    behaviour.
+  </p>
+
+  <div class="title-spacer"></div>
+
+  <table class="meta">
+    <tr><th>Brief</th><td>Personalised Health-Risk Dashboard (problem statement&nbsp;#3)</td></tr>
+    <tr><th>Submitted by</th><td>&nbsp;</td></tr>
+    <tr><th>Document version</th><td>1.0</td></tr>
+    <tr><th>Date</th><td>10 September 2026</td></tr>
+    <tr><th>Implementation</th><td>Single-page web application &middot; 3,755 lines &middot; 13 UI components &middot; no backend</td></tr>
+    <tr><th>Status</th><td>Feature-complete; 525 scoring assertions and a server-render smoke test passing</td></tr>
+  </table>
+
+  <div class="disclaimer-box">
+    <strong>This is not a diagnostic tool.</strong> Every result it produces is a screening-level
+    educational estimate generated by predefined scoring rules. The application does not diagnose,
+    and it does not recommend any medicine or treatment. All profiles used in this report and in
+    the application are synthetic. Any real health decision requires a qualified healthcare
+    professional.
+  </div>
+</div>
+
+<!-- ============ CONTENTS ============ -->
+<div class="toc">
+  <h2 style="margin-top:0"><span class="num">&nbsp;</span>Contents</h2>
+  <ol>
+    <li>Problem Statement</li>
+    <li>Proposed Solution</li>
+    <li>Features</li>
+    <li>System Architecture
+      <span class="sub">Data flow &middot; Scoring engine &middot; Simulation layer &middot; Verification strategy</span></li>
+    <li>Technology Stack</li>
+    <li>Risk Models Used
+      <span class="sub">Instruments, thresholds, adaptations and cross-condition coupling</span></li>
+    <li>Demo Personas</li>
+    <li>What-If Simulator</li>
+    <li>Data Provenance and Explainability</li>
+    <li>PDF Export</li>
+    <li>Screenshots</li>
+    <li>Future Scope</li>
+    <li>Conclusion</li>
+  </ol>
+</div>
+
+<!-- ============ 1 ============ -->
+<section>
+<h2><span class="num">1</span>Problem Statement</h2>
+
+<p>
+Chronic conditions such as type-2 diabetes, hypertension and cardiovascular disease develop over
+years and are substantially driven by modifiable factors — weight, physical activity, smoking and
+diet. Validated screening instruments for all three have existed in the clinical literature for
+two decades. The gap is not the mathematics; it is access and comprehension. The instruments live
+in journal appendices and clinical software, and a person who wants to understand their own
+standing has little between a full clinical consultation and an unsourced internet quiz.
+</p>
+
+<p>
+Two failures are common in the tools that try to close that gap. The first is
+<strong>opacity</strong>: a tool returns "your risk is high" with no account of which inputs
+produced the result or how strongly, which makes the number impossible to trust and impossible to
+act on. The second is <strong>fatalism</strong>: a tool reports a static figure without showing
+that the figure responds to change, so a user with an elevated result learns only that they should
+be worried.
+</p>
+
+<p>
+A third problem is specific to machine-learned health tools. A model trained on population data
+can be accurate in aggregate while being unable to explain any individual prediction, and in a
+clinical context an unexplainable output is difficult to act on, difficult to audit, and difficult
+to defend.
+</p>
+
+<p>The problem this project addresses is therefore threefold:</p>
+
+<ul>
+  <li>Estimate risk for multiple conditions from information a person can supply without
+      laboratory work.</li>
+  <li>Account for the estimate completely — every point, the rule that awarded it, and the
+      published instrument that rule came from.</li>
+  <li>Show what would change if the person changed something they can actually change, and be
+      honest about what they cannot.</li>
+</ul>
+</section>
+
+<!-- ============ 2 ============ -->
+<section>
+<h2><span class="num">2</span>Proposed Solution</h2>
+
+<p>
+<strong>Health Risk Lens</strong> is a single-page web application that scores three conditions
+independently from thirteen items of basic health and lifestyle information, explains each score
+down to the individual rule row, and provides a simulator that recalculates all three scores in
+real time as modifiable factors are adjusted.
+</p>
+
+<p>The design rests on three decisions, each taken deliberately against a more conventional alternative.</p>
+
+<h3>2.1 Rules, not machine learning</h3>
+<p>
+Scoring is performed by three point tables held as JSON and adapted from published instruments.
+There is no model, no training data and no inference. This is a deliberate trade: the system gives
+up any possibility of learning population-specific patterns in exchange for an explanation that is
+exact rather than approximate. When the application states that family history contributed five
+points, that is not an estimate of feature importance — it is the arithmetic, and the rule row
+that produced it can be displayed alongside.
+</p>
+
+<h3>2.2 Three instruments, not one score</h3>
+<p>
+The three conditions are scored by three separate instruments with different factors, different
+weights and different cut-points. They are deliberately not normalised onto a shared scale, and
+the interface draws each condition's own band boundaries rather than a tidy shared split. A single
+blended "health score" would have been simpler to present and would have misrepresented every
+instrument it averaged.
+</p>
+
+<h3>2.3 Simulation as the same function, not a second one</h3>
+<p>
+Scoring is a pure function of a plain profile object. Simulation therefore requires no additional
+scoring logic: it is the identical function applied to a patched copy of the profile. Because both
+results come from the same point tables, the difference between them is the literal arithmetic,
+and the explanation of a simulated change cannot drift from the change itself.
+</p>
+
+<div class="callout">
+  <p><strong>Design constraint honoured throughout.</strong> The application is screening-level and
+  educational. It does not diagnose, it recommends no treatment or medicine, and every disclaimer
+  is persistent rather than a dismissible modal.</p>
+</div>
+</section>
+
+<!-- ============ 3 ============ -->
+<section>
+<h2><span class="num">3</span>Features</h2>
+
+<table class="data">
+  <thead>
+    <tr><th style="width:44mm">Feature</th><th>Description</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><strong>Three independent risk estimates</strong></td>
+        <td>Type-2 diabetes, hypertension and cardiovascular disease, each scored by its own instrument and returning its own Low / Moderate / High band.</td></tr>
+    <tr><td><strong>Four demo personas</strong></td>
+        <td>One click replaces the whole profile and recalculates every score, chart and explanation on screen.</td></tr>
+    <tr><td><strong>Health and lifestyle data entry</strong></td>
+        <td>Thirteen fields with live derivation of BMI, waist circumference and blood-pressure category.</td></tr>
+    <tr><td><strong>Instant recalculation</strong></td>
+        <td>No submit button and no debounce; scoring is a few dozen table lookups per keystroke.</td></tr>
+    <tr><td><strong>What-if simulator</strong></td>
+        <td>Four modifiable levers plus three one-click scenarios; the original profile is never mutated.</td></tr>
+    <tr><td><strong>Contributing-factor breakdown</strong></td>
+        <td>Every factor that scored, its value, the points it awarded and the maximum it could have awarded, ranked, with the top factor flagged.</td></tr>
+    <tr><td><strong>Data provenance drawer</strong></td>
+        <td>Band thresholds drawn to scale and the complete rule table for every factor, with the row that fired ticked.</td></tr>
+    <tr><td><strong>Comparison chart</strong></td>
+        <td>The three results side by side, each column carrying its own band boundaries as background zones.</td></tr>
+    <tr><td><strong>Simulation attribution</strong></td>
+        <td>A row-by-row account of which rules changed, from what to what, and the resulting point delta per condition.</td></tr>
+    <tr><td><strong>PDF export</strong></td>
+        <td>A consultation-style summary document produced from a dedicated print component.</td></tr>
+    <tr><td><strong>Accessibility provisions</strong></td>
+        <td>Every band pairs colour with a glyph and a word; tabular figures prevent layout shift; sliders are keyboard-operable; reduced-motion preference is respected.</td></tr>
+  </tbody>
+  <caption>Table 1 — Feature summary.</caption>
+</table>
+</section>
+
+<!-- ============ 4 ============ -->
+<section>
+<h2><span class="num">4</span>System Architecture</h2>
+
+<p>
+The application has no backend, no database, no network calls, no router and no state-management
+library. It is a single-page React application in which the rule tables are static JSON and all
+scoring is synchronous. This is an architectural choice with a specific benefit: a demonstration
+with no server dependency cannot fail because of connectivity, and the entire computation is
+inspectable in the browser.
+</p>
+
+<h3>4.1 Source layout</h3>
+
+<div class="arch">src/
+  data/rules/*.json      the three point tables — the substance of the system
+  data/factors.js        form metadata and which factors are modifiable
+  data/demoProfiles.js   the four demo personas
+  lib/scoring/           derive · scoreCondition · scoreAll · bands · conditions
+  lib/simulation/        applyOverrides · summarizeSimulation · presets
+  hooks/                 useRiskResults · useCountUp
+  components/            layout · form · results · whatif · personas · print
+  pages/                 Landing · Dashboard
+scripts/
+  verify-scoring.mjs     525 assertions, plain Node, no test framework
+  ssr-smoke.jsx          server-renders every screen and simulation state</div>
+
+<h3>4.2 Data flow</h3>
+
+<p>
+State consists of exactly two values held in the dashboard: the <code>profile</code> object and a
+sparse <code>overrides</code> patch. Everything else is derived on each render.
+</p>
+
+<div class="arch">profile ─────────────────────────► scoreAll(profile) ──────► current
+   │                                                                │
+   └── + overrides ── applyOverrides() ── scoreAll(patched) ── simulated
+                                                                    │
+                                    summarizeSimulation(current, simulated)
+                                                                    │
+                                              deltas · band crossings · attribution</div>
+
+<p>
+Because <code>overrides</code> is held separately and applied to a copy, the user's own data is
+never mutated. "Reset to my data" is not a re-fetch or an undo stack; it is the assignment of an
+empty patch.
+</p>
+
+<h3>4.3 The scoring engine</h3>
+
+<p>
+A single generic evaluator, <code>scoreCondition.js</code>, scores all three conditions. The
+difference between diabetes, hypertension and cardiovascular disease lives entirely in JSON: each
+rule file declares its factors, the rows each factor can match, the points each row awards, the
+band thresholds and the source citation. Adding a fourth condition requires a fourth JSON file and
+no new scoring code.
+</p>
+
+<p>
+Bands are computed from the <strong>raw</strong> point total and never from the 0–100 display
+index, so the number shown on screen and the category beside it cannot disagree because of
+rounding.
+</p>
+
+<h3>4.4 Verification strategy</h3>
+
+<p>
+The project carries two executable checks rather than a conventional unit-test suite, both plain
+Node scripts with no test-framework dependency:
+</p>
+
+<ul>
+  <li><code>npm run verify</code> — <strong>525 assertions</strong> covering derived metrics and
+      their guards, band boundaries including the exact BMI values 25.0 and 30.0, all four personas
+      and their metadata, every step of the demonstration sequence, override hygiene (no-op
+      overrides are dropped and the profile is never mutated), the simulation summary including
+      changes that make results worse and the empty difference, and the provenance invariants
+      described in section 9.</li>
+  <li><code>npm run smoke</code> — server-renders both pages and six simulation scenarios: no
+      overrides, a single change, the full sequence, a change that worsens the result, a no-op
+      override, and an already-low profile. It fails if any component throws.</li>
+</ul>
+</section>
+
+<!-- ============ 5 ============ -->
+<section>
+<h2><span class="num">5</span>Technology Stack</h2>
+
+<table class="data">
+  <thead>
+    <tr><th style="width:38mm">Layer</th><th style="width:34mm">Technology</th><th>Rationale</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>UI framework</td><td>React 18.3</td>
+        <td>Component model suits a screen where one state change must propagate to a dozen coordinated views.</td></tr>
+    <tr><td>Build tooling</td><td>Vite 6.0</td>
+        <td>Fast development server and an optimised production build with no configuration overhead.</td></tr>
+    <tr><td>Styling</td><td>Tailwind CSS 3.4</td>
+        <td>A token layer defined once in configuration — a four-step type scale, a spacing scale, three elevation tiers and a clinical palette — applied consistently across every component.</td></tr>
+    <tr><td>Charting</td><td>Recharts 2.13</td>
+        <td>Declarative SVG charting; custom background shapes allow each column to carry its own band thresholds.</td></tr>
+    <tr><td>Scoring</td><td>Plain JavaScript and JSON</td>
+        <td>No library. The rule tables are the domain model and are meant to be opened and read.</td></tr>
+    <tr><td>PDF generation</td><td>Browser print pipeline</td>
+        <td>Zero dependencies and true vector output; see section 10.</td></tr>
+    <tr><td>Verification</td><td>Node scripts</td>
+        <td>525 assertions and a server-render smoke test without a test-framework dependency.</td></tr>
+  </tbody>
+  <caption>Table 2 — Technology choices and the reason for each.</caption>
+</table>
+
+<p>
+The full production dependency list is three packages: <code>react</code>,
+<code>react-dom</code> and <code>recharts</code>. Everything else is a build-time tool.
+</p>
+</section>
+
+<!-- ============ 6 ============ -->
+<section>
+<h2><span class="num">6</span>Risk Models Used</h2>
+
+<p>
+All three instruments are adapted from published sources, and every adaptation is stated in the
+interface itself rather than only in documentation.
+</p>
+
+<table class="data">
+  <thead>
+    <tr><th style="width:33mm">Condition</th><th>Basis</th>
+        <th class="num-col">Max</th><th class="num-col">Low</th>
+        <th class="num-col">Moderate</th><th class="num-col">High</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Type-2 diabetes</td>
+        <td>FINDRISC — Lindström &amp; Tuomilehto, <i>Diabetes Care</i>, 2003</td>
+        <td class="num-col">26</td><td class="num-col">0–6</td><td class="num-col">7–14</td><td class="num-col">15–26</td></tr>
+    <tr><td>Hypertension</td>
+        <td>ACC/AHA 2017 blood-pressure categories with Framingham risk factors</td>
+        <td class="num-col">27</td><td class="num-col">0–7</td><td class="num-col">8–15</td><td class="num-col">16–27</td></tr>
+    <tr><td>Cardiovascular disease</td>
+        <td>Non-laboratory Framingham — Gaziano et al., <i>The Lancet</i>, 2008</td>
+        <td class="num-col">38</td><td class="num-col">0–11</td><td class="num-col">12–22</td><td class="num-col">23–38</td></tr>
+  </tbody>
+  <caption>Table 3 — Instruments and band thresholds, expressed in raw points.</caption>
+</table>
+
+<h3>6.1 Adaptations, stated plainly</h3>
+
+<ul>
+  <li>FINDRISC's five official categories are collapsed to three, as the brief requires.</li>
+  <li>The cardiovascular points are re-scaled for this prototype and are <strong>not</strong> the
+      published coefficient set. That model was chosen because it substitutes BMI for a lipid
+      panel, and therefore requires no blood work — a direct fit for the no-laboratory-data
+      constraint.</li>
+  <li>Physical activity uses a single 150 min/week cut-point across all three models for
+      consistency, following the WHO adult guideline.</li>
+  <li>One family-history field feeds all three conditions rather than three separate fields.</li>
+  <li>The source instruments are sex-binary. "Prefer not to say" resolves to the female reference
+      table, which uses the lower waist thresholds.</li>
+</ul>
+
+<h3>6.2 Cross-condition coupling</h3>
+
+<p>
+A High diabetes result contributes three points to the cardiovascular score, because type-2
+diabetes is itself an established cardiovascular risk factor. This makes the evaluation order
+load-bearing: diabetes is scored before cardiovascular disease. The coupling is non-circular by
+construction — cardiovascular risk never feeds back into the diabetes score — and it is surfaced in
+the interface as a labelled contributing factor rather than hidden inside the arithmetic.
+</p>
+
+<div class="callout">
+  <p>The three sets of thresholds are deliberately <strong>not</strong> forced onto identical
+  cut-points. Each condition draws its own band boundaries wherever it is displayed. Normalising
+  them would have produced a tidier chart and a less accurate one.</p>
+</div>
+</section>
+
+<!-- ============ 7 ============ -->
+<section>
+<h2><span class="num">7</span>Demo Personas</h2>
+
+<p>
+Four synthetic profiles ship with the application. The set is chosen so that the three models
+visibly <strong>disagree</strong> with one another: if every persona returned the same band across
+all three conditions, an observer could reasonably suspect a single hidden score presented three
+times. All four are verified by the assertion suite.
+</p>
+
+<table class="data">
+  <thead>
+    <tr><th style="width:38mm">Persona</th><th>Profile</th>
+        <th class="num-col">Diabetes</th><th class="num-col">Hypertension</th><th class="num-col">Cardiovascular</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><strong>Healthy College Student</strong></td>
+        <td>20 F · BMI 21.8 · never smoked · 120 min/week</td>
+        <td class="num-col band-low">8 Low</td><td class="num-col band-low">7 Low</td><td class="num-col band-low">5 Low</td></tr>
+    <tr><td><strong>Busy Office Worker</strong></td>
+        <td>38 M · BMI 28.4 · desk job · poor diet</td>
+        <td class="num-col band-moderate">38 Moderate</td><td class="num-col band-moderate">44 Moderate</td><td class="num-col band-low">24 Low</td></tr>
+    <tr><td><strong>High-Risk Adult</strong></td>
+        <td>58 M · BMI 30.1 · current smoker · sedentary</td>
+        <td class="num-col band-high">65 High</td><td class="num-col band-high">70 High</td><td class="num-col band-high">74 High</td></tr>
+    <tr><td><strong>Senior Citizen</strong></td>
+        <td>68 F · BMI 31.6 · prior high glucose</td>
+        <td class="num-col band-high">92 High</td><td class="num-col band-moderate">56 Moderate</td><td class="num-col band-moderate">53 Moderate</td></tr>
+  </tbody>
+  <caption>Table 4 — The four demo personas and their scores on the 0–100 display index. Every profile is fictional.</caption>
+</table>
+
+<p>
+The office worker is the informative case: Moderate for diabetes and blood pressure but
+<strong>Low</strong> for cardiovascular risk, because he is young and has never smoked. The senior
+citizen is the complementary case — a high result driven largely by age and a previously recorded
+high glucose reading, neither of which any lifestyle change can alter.
+</p>
+</section>
+
+<!-- ============ 8 ============ -->
+<section>
+<h2><span class="num">8</span>What-If Simulator</h2>
+
+<p>
+The simulator is the feature the application is designed around. It exposes four levers —
+<strong>smoking status</strong>, <strong>weight</strong>, <strong>physical activity</strong> and
+<strong>fruit and vegetable intake</strong> — plus three one-click scenarios and a combined
+"apply all three". Systolic blood pressure is available under an Advanced disclosure, labelled as
+an outcome measure rather than a lever.
+</p>
+
+<h3>8.1 Only what a person can move</h3>
+
+<p>
+Age, sex, family history and previously recorded high blood glucose are displayed
+<strong>locked</strong>. They contribute to the score, but no lifestyle change alters them, and a
+simulator that let a user pretend to be thirty years younger would be a toy. Showing them as fixed
+is part of the argument the tool is making.
+</p>
+
+<h3>8.2 Two modelling choices surfaced rather than hidden</h3>
+
+<ul>
+  <li><strong>Quitting moves a user to <i>former</i> smoker, not <i>never</i>.</strong> Risk
+      remains elevated for years after cessation, and the point table reflects that. The interface
+      states this next to the control.</li>
+  <li><strong>Waist circumference tracks weight</strong> at approximately 0.8 cm per kilogram. The
+      diabetes instrument scores waist separately from BMI, so holding it constant would understate
+      the effect of weight change. It is labelled as an estimate.</li>
+</ul>
+
+<h3>8.3 The demonstration sequence</h3>
+
+<p>
+The high-risk persona is numerically frozen so that the following sequence is reproducible. It is
+asserted step by step by the verification suite.
+</p>
+
+<table class="data">
+  <thead>
+    <tr><th style="width:44mm">Step</th><th class="num-col">Diabetes</th>
+        <th class="num-col">Hypertension</th><th class="num-col">Cardiovascular</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Starting profile</td>
+        <td class="num-col band-high">65 High</td><td class="num-col band-high">70 High</td><td class="num-col band-high">74 High</td></tr>
+    <tr><td>Quit smoking</td>
+        <td class="num-col">65 — no change</td><td class="num-col band-high">67 High</td><td class="num-col band-high">63 High</td></tr>
+    <tr><td>+ 150 min/week activity</td>
+        <td class="num-col band-high">58 High</td><td class="num-col band-high">59 High</td><td class="num-col band-moderate">55 → Moderate</td></tr>
+    <tr><td>+ lose 6 kg</td>
+        <td class="num-col band-moderate">46 → Moderate</td><td class="num-col band-moderate">56 → Moderate</td><td class="num-col band-moderate">42 Moderate</td></tr>
+  </tbody>
+  <caption>Table 5 — The demonstration sequence, asserted step by step by <code>npm run verify</code>.</caption>
+</table>
+
+<p>
+The first step is deliberately included: smoking does not feed the diabetes model, so the diabetes
+card reports "no change to this risk" and explains why. A tool that moved every number whenever
+any input changed would be easier to demonstrate and would be lying. The third step crosses the
+two remaining band boundaries and simultaneously switches off the diabetes-to-cardiovascular
+coupling described in section 6.2.
+</p>
+</section>
+
+<!-- ============ 9 ============ -->
+<section>
+<h2><span class="num">9</span>Data Provenance and Explainability</h2>
+
+<p>
+Each contributing-factors card carries a <strong>"How was this calculated?"</strong> disclosure
+containing three things:
+</p>
+
+<ol class="body-list">
+  <li><strong>The band thresholds</strong> for that instrument, drawn to scale in proportion to the
+      real point ranges, with a marker at the current raw score.</li>
+  <li><strong>Every rule row</strong> each factor could have matched, with the row that fired
+      ticked — so the reader sees not only what scored, but what the alternatives were and where
+      the boundaries sit.</li>
+  <li><strong>The source instrument</strong> and the adaptations made to it.</li>
+</ol>
+
+<h3>9.1 Why the drawer cannot lie</h3>
+
+<p>
+The rule rows are emitted by the scoring engine itself as part of each contribution record, not
+recomputed by the interface. The drawer is therefore a pure renderer: it has no independent
+arithmetic and cannot drift from the score displayed above it.
+</p>
+
+<p>
+This property is asserted rather than assumed. For all <strong>104 factor evaluations</strong>
+across every persona, the verification suite checks that <strong>exactly one row is active</strong>
+and that <strong>the active row's points equal the score that factor contributed</strong>. The
+reasoning behind this test is simple: a provenance drawer that quietly disagreed with its own
+scoring engine would look, to any observer, exactly like a correct one.
+</p>
+
+<h3>9.2 Explanation of change</h3>
+
+<p>
+When the simulator is active, the interface additionally presents a row-level attribution of the
+difference — for example <code>smoking 6 → 2, −4</code>. Because both the current and simulated
+results are produced by the same point tables, this difference is the literal arithmetic and not an
+approximation of feature importance. The verification suite asserts that the per-factor deltas sum
+exactly to the reported score delta.
+</p>
+</section>
+
+<!-- ============ 10 ============ -->
+<section>
+<h2><span class="num">10</span>PDF Export</h2>
+
+<p>
+The "Export summary" action produces a consultation-style document containing a masthead, a
+profile table, a results table, the simulated changes when the simulator is active, and the
+disclaimer. It is a purpose-built component rendered for paper — not the dashboard with pieces
+hidden by a print stylesheet.
+</p>
+
+<p>
+The implementation invokes the browser's own print pipeline against that component. This was
+chosen over <code>html2canvas</code>/<code>html2pdf</code> and <code>jsPDF</code> deliberately, for
+two reasons. First, it adds <strong>zero dependencies</strong>. Second, the output is real vector
+text — sharp at any zoom, selectable, searchable, and tens of kilobytes rather than a multi-megabyte
+rasterised screenshot. A canvas-based approach would additionally have mishandled the gradient
+callout, the translucent header and the sticky results strip.
+</p>
+
+<div class="callout">
+  <p><strong>Known limitation.</strong> Because this uses the browser print dialog, the user selects
+  "Save as PDF" — two interactions rather than a silent download. A library such as jsPDF is the
+  upgrade path if a true one-click download is required, at the cost of the dependency and the
+  vector-text quality.</p>
+</div>
+</section>
+
+<!-- ============ 11 ============ -->
+<section>
+<h2><span class="num">11</span>Screenshots</h2>
+
+<figure>
+  <img src="landing.png" alt="Landing page showing the headline, description and a live before-and-after risk panel">
+  <figcaption><b>Figure 1 — Landing page.</b> The panel on the right is not marketing copy: it is
+  the real scoring engine run twice on the high-risk persona, once as-is and once with the three
+  lifestyle scenarios applied. If a rule table changes, this panel changes with it.</figcaption>
+</figure>
+
+<figure>
+  <img src="dashboard.png" alt="Dashboard at rest showing four personas, three risk score cards and the what-if simulator">
+  <figcaption><b>Figure 2 — Dashboard at rest.</b> The persona selector, all three scores with their
+  own band tracks, and the entry point to the simulator, on a single screen at 1280×800 with no
+  scrolling required.</figcaption>
+</figure>
+
+<figure>
+  <img src="simulated.png" alt="Simulation mode with all three scores reduced and the biggest impact highlighted">
+  <figcaption><b>Figure 3 — Simulation mode.</b> Three lifestyle changes applied. Each card shows the
+  previous value struck through, the new value, the delta, and the band transition; the callout
+  identifies the largest single effect. The original profile is unchanged.</figcaption>
+</figure>
+
+<figure>
+  <img src="provenance.png" alt="Provenance drawer showing band thresholds and the full rule table with the active row ticked">
+  <figcaption><b>Figure 4 — Provenance drawer.</b> Band thresholds drawn to scale with a marker at the
+  raw score, followed by every rule row each factor could have matched, with the row that fired
+  marked. These rows come from the scoring engine, not from the interface.</figcaption>
+</figure>
+
+<figure class="portrait">
+  <img src="mobile.png" alt="The dashboard rendered at 390 pixels wide on a phone">
+  <figcaption><b>Figure 5 — Narrow viewport (390 px).</b> The layout reflows to a single column;
+  scores, bands, deltas and transitions all remain legible.</figcaption>
+</figure>
+</section>
+
+<!-- ============ 12 ============ -->
+<section>
+<h2><span class="num">12</span>Future Scope</h2>
+
+<p>
+The following extensions are ordered by the ratio of value to architectural disruption. The first
+group requires no change to the existing design.
+</p>
+
+<h3>12.1 Near-term</h3>
+<ul>
+  <li><strong>One-click PDF download.</strong> Replace the browser print dialog with a generated
+      document, accepting the dependency cost described in section 10.</li>
+  <li><strong>Additional conditions.</strong> Chronic kidney disease and metabolic syndrome both
+      have non-laboratory screening instruments. Each would require one JSON rule file and no new
+      scoring code.</li>
+  <li><strong>Profile persistence.</strong> Local storage for a user's own profile, so a return
+      visit does not begin from a demo persona. No backend required.</li>
+  <li><strong>Formal accessibility audit.</strong> The application already pairs colour with glyph
+      and text, respects reduced motion and supports keyboard operation of every control; a formal
+      WCAG 2.2 AA audit would confirm and complete this.</li>
+</ul>
+
+<h3>12.2 Medium-term</h3>
+<ul>
+  <li><strong>Laboratory-value variants.</strong> Where a user has a recent lipid panel or HbA1c
+      result, the full Framingham and clinical diabetes instruments become available and are more
+      accurate. The rule-file architecture accommodates a second variant per condition.</li>
+  <li><strong>Longitudinal tracking.</strong> Storing dated profiles would turn the simulator's
+      hypothetical into a record of actual change over time — the single most motivating feature the
+      current design lacks.</li>
+  <li><strong>Localisation.</strong> The instruments are used internationally; the interface strings
+      and the rule labels are already separated from the scoring logic.</li>
+  <li><strong>Clinician view.</strong> A denser presentation showing all three rule tables at once,
+      intended for use during a consultation rather than by the patient alone.</li>
+</ul>
+
+<h3>12.3 Longer-term and out of scope for a prototype</h3>
+<ul>
+  <li><strong>Validation against real cohort data.</strong> The adaptations in section 6.1 —
+      particularly the re-scaled cardiovascular points — would need to be checked against outcome
+      data before any claim of clinical accuracy could be made. Until then the tool is
+      screening-level and educational, and says so.</li>
+  <li><strong>Clinical system integration.</strong> Ingesting values from an electronic health
+      record would remove data entry entirely, and would introduce regulatory obligations
+      substantially beyond the current scope.</li>
+</ul>
+
+<div class="callout">
+  <p><strong>Deliberately not planned.</strong> Replacing the rule tables with a trained model. It
+  would make the explainability guarantees in section 9 impossible to maintain, and those
+  guarantees are the point of the project.</p>
+</div>
+</section>
+
+<!-- ============ 13 ============ -->
+<section>
+<h2><span class="num">13</span>Conclusion</h2>
+
+<p>
+Health Risk Lens demonstrates that a health-risk tool can be simultaneously useful and completely
+accountable. Every number it displays can be traced to a rule row, that row to a point table, and
+that table to a published instrument — and the interface exposes that chain to the user rather than
+documenting it elsewhere.
+</p>
+
+<p>
+The central technical decision was to make scoring a pure function of a plain profile object. That
+one choice produced the simulator at almost no additional cost, guaranteed that the explanation of
+a change is the arithmetic of the change rather than an approximation of it, and made the whole
+system verifiable by ordinary assertions — 525 of them, including the invariant that the provenance
+drawer must agree with the engine that produced its data.
+</p>
+
+<p>
+The project's principal limitation is stated plainly rather than minimised: the instruments are
+adaptations, the cardiovascular point set is re-scaled and not the published coefficients, and no
+result has been validated against outcome data. The application is a screening-level educational
+tool. It does not diagnose, it recommends no treatment, and it directs the user to a qualified
+healthcare professional. Within those boundaries it does something the opaque alternatives cannot:
+it shows its work, and it shows what would change if the user did.
+</p>
+
+<hr class="end-rule">
+<p style="font-size:9pt; color:var(--faint); text-align:left;">
+  End of report. Source, rule tables and verification scripts accompany this document.
+</p>
+</section>
+
+</body>
+</html>

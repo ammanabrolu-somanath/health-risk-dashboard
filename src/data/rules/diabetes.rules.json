@@ -1,0 +1,103 @@
+{
+  "id": "diabetes",
+  "label": "Type-2 Diabetes",
+  "short": "Diabetes",
+  "blurb": "Screening-level likelihood of developing type-2 diabetes.",
+  "source": "Adapted from FINDRISC (Lindström & Tuomilehto, Diabetes Care 2003)",
+  "adaptation": "FINDRISC's five official categories are collapsed to three, as the brief requires. Physical activity uses a 150 min/week cut-point for consistency across all three models.",
+  "thresholds": { "moderate": 7, "high": 15 },
+  "factors": [
+    {
+      "id": "age",
+      "label": "Age",
+      "field": "age",
+      "type": "range",
+      "unit": "years",
+      "bands": [
+        { "max": 45, "points": 0, "label": "Under 45" },
+        { "max": 55, "points": 2, "label": "45–54" },
+        { "max": 65, "points": 3, "label": "55–64" },
+        { "max": null, "points": 4, "label": "65 or over" }
+      ]
+    },
+    {
+      "id": "bmi",
+      "label": "Body-mass index",
+      "field": "bmi",
+      "type": "range",
+      "decimals": 1,
+      "bands": [
+        { "max": 25, "points": 0, "label": "Under 25" },
+        { "max": 30, "points": 1, "label": "25 to 30" },
+        { "max": null, "points": 3, "label": "Over 30" }
+      ]
+    },
+    {
+      "id": "waist",
+      "label": "Waist circumference",
+      "field": "waist",
+      "type": "range-by-sex",
+      "unit": "cm",
+      "decimals": 0,
+      "bandsBySex": {
+        "male": [
+          { "max": 94, "points": 0, "label": "Under 94 cm" },
+          { "max": 102, "points": 3, "label": "94 to 102 cm" },
+          { "max": null, "points": 4, "label": "Over 102 cm" }
+        ],
+        "female": [
+          { "max": 80, "points": 0, "label": "Under 80 cm" },
+          { "max": 88, "points": 3, "label": "80 to 88 cm" },
+          { "max": null, "points": 4, "label": "Over 88 cm" }
+        ]
+      }
+    },
+    {
+      "id": "activity",
+      "label": "Physical activity",
+      "field": "activityMinutes",
+      "type": "range",
+      "unit": "min/week",
+      "bands": [
+        { "max": 150, "points": 2, "label": "Below 150 min/week" },
+        { "max": null, "points": 0, "label": "150+ min/week" }
+      ]
+    },
+    {
+      "id": "diet",
+      "label": "Fruit & vegetables",
+      "field": "dietQuality",
+      "type": "map",
+      "map": { "good": 0, "average": 0, "poor": 1 },
+      "valueLabels": { "good": "Every day", "average": "Most days", "poor": "Rarely" }
+    },
+    {
+      "id": "bpMedication",
+      "label": "Blood-pressure medication",
+      "field": "onBpMedication",
+      "type": "map",
+      "map": { "false": 0, "true": 2 },
+      "valueLabels": { "false": "No", "true": "Yes" }
+    },
+    {
+      "id": "priorHighGlucose",
+      "label": "Previously recorded high blood glucose",
+      "field": "priorHighGlucose",
+      "type": "map",
+      "map": { "false": 0, "true": 5 },
+      "valueLabels": { "false": "No", "true": "Yes" }
+    },
+    {
+      "id": "familyHistory",
+      "label": "Family history",
+      "field": "familyHistory",
+      "type": "map",
+      "map": { "none": 0, "second": 3, "first": 5 },
+      "valueLabels": {
+        "none": "None recorded",
+        "second": "Second-degree relative",
+        "first": "First-degree relative"
+      }
+    }
+  ]
+}

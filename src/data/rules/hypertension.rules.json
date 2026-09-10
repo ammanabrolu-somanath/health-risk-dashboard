@@ -1,0 +1,101 @@
+{
+  "id": "hypertension",
+  "label": "Hypertension",
+  "short": "Hypertension",
+  "blurb": "Screening-level likelihood of having or developing high blood pressure.",
+  "source": "Blood-pressure categories from ACC/AHA 2017; risk-factor points adapted from Framingham hypertension risk factors",
+  "adaptation": "The measured blood-pressure category deliberately dominates this score. That is clinically appropriate — it is a direct measurement rather than a proxy.",
+  "thresholds": { "moderate": 8, "high": 16 },
+  "factors": [
+    {
+      "id": "bpCategory",
+      "label": "Blood-pressure category",
+      "field": "bpCategory",
+      "type": "map",
+      "map": { "normal": 0, "elevated": 3, "stage1": 6, "stage2": 10 },
+      "valueLabels": {
+        "normal": "Normal (under 120/80)",
+        "elevated": "Elevated (120–129 / under 80)",
+        "stage1": "Stage 1 (130–139 or 80–89)",
+        "stage2": "Stage 2 (140+ or 90+)"
+      }
+    },
+    {
+      "id": "bpMedication",
+      "label": "Blood-pressure medication",
+      "field": "onBpMedication",
+      "type": "map",
+      "map": { "false": 0, "true": 2 },
+      "valueLabels": { "false": "No", "true": "Yes" }
+    },
+    {
+      "id": "age",
+      "label": "Age",
+      "field": "age",
+      "type": "range",
+      "unit": "years",
+      "bands": [
+        { "max": 45, "points": 0, "label": "Under 45" },
+        { "max": 55, "points": 1, "label": "45–54" },
+        { "max": 65, "points": 2, "label": "55–64" },
+        { "max": null, "points": 3, "label": "65 or over" }
+      ]
+    },
+    {
+      "id": "bmi",
+      "label": "Body-mass index",
+      "field": "bmi",
+      "type": "range",
+      "decimals": 1,
+      "bands": [
+        { "max": 25, "points": 0, "label": "Under 25" },
+        { "max": 30, "points": 2, "label": "25 to 30" },
+        { "max": null, "points": 3, "label": "Over 30" }
+      ]
+    },
+    {
+      "id": "smoking",
+      "label": "Smoking status",
+      "field": "smoking",
+      "type": "map",
+      "map": { "never": 0, "former": 1, "current": 2 },
+      "valueLabels": {
+        "never": "Never smoked",
+        "former": "Former smoker",
+        "current": "Current smoker"
+      }
+    },
+    {
+      "id": "activity",
+      "label": "Physical activity",
+      "field": "activityMinutes",
+      "type": "range",
+      "unit": "min/week",
+      "bands": [
+        { "max": 30, "points": 2, "label": "Under 30 min/week" },
+        { "max": 150, "points": 1, "label": "30 to 149 min/week" },
+        { "max": null, "points": 0, "label": "150+ min/week" }
+      ]
+    },
+    {
+      "id": "familyHistory",
+      "label": "Family history",
+      "field": "familyHistory",
+      "type": "map",
+      "map": { "none": 0, "second": 1, "first": 3 },
+      "valueLabels": {
+        "none": "None recorded",
+        "second": "Second-degree relative",
+        "first": "First-degree relative"
+      }
+    },
+    {
+      "id": "diet",
+      "label": "Diet quality",
+      "field": "dietQuality",
+      "type": "map",
+      "map": { "good": 0, "average": 1, "poor": 2 },
+      "valueLabels": { "good": "Good", "average": "Average", "poor": "Poor" }
+    }
+  ]
+}

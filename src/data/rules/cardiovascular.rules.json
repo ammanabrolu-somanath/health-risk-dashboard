@@ -1,0 +1,124 @@
+{
+  "id": "cardiovascular",
+  "label": "Cardiovascular Disease",
+  "short": "Cardiovascular",
+  "blurb": "Screening-level likelihood of a cardiovascular event.",
+  "source": "Adapted from the non-laboratory Framingham model (Gaziano et al., The Lancet 2008)",
+  "adaptation": "Chosen because it substitutes BMI for a lipid panel, so it needs no blood work — a fit for the brief's no-laboratory-data constraint. Points are re-scaled for this prototype; this is not the published coefficient set.",
+  "thresholds": { "moderate": 12, "high": 23 },
+  "factors": [
+    {
+      "id": "age",
+      "label": "Age",
+      "field": "age",
+      "type": "range",
+      "unit": "years",
+      "bands": [
+        { "max": 40, "points": 0, "label": "Under 40" },
+        { "max": 50, "points": 2, "label": "40–49" },
+        { "max": 60, "points": 4, "label": "50–59" },
+        { "max": 70, "points": 6, "label": "60–69" },
+        { "max": null, "points": 8, "label": "70 or over" }
+      ]
+    },
+    {
+      "id": "sex",
+      "label": "Sex",
+      "field": "sex",
+      "type": "map",
+      "map": { "male": 2, "female": 0, "other": 0 },
+      "valueLabels": { "male": "Male", "female": "Female", "other": "Prefer not to say" }
+    },
+    {
+      "id": "systolic",
+      "label": "Systolic blood pressure",
+      "field": "systolic",
+      "type": "range",
+      "unit": "mmHg",
+      "bands": [
+        { "max": 120, "points": 0, "label": "Under 120" },
+        { "max": 130, "points": 1, "label": "120–129" },
+        { "max": 140, "points": 2, "label": "130–139" },
+        { "max": 160, "points": 4, "label": "140–159" },
+        { "max": null, "points": 6, "label": "160 or over" }
+      ]
+    },
+    {
+      "id": "bpMedication",
+      "label": "Blood-pressure medication",
+      "field": "onBpMedication",
+      "type": "map",
+      "map": { "false": 0, "true": 1 },
+      "valueLabels": { "false": "No", "true": "Yes" }
+    },
+    {
+      "id": "bmi",
+      "label": "Body-mass index",
+      "field": "bmi",
+      "type": "range",
+      "decimals": 1,
+      "bands": [
+        { "max": 25, "points": 0, "label": "Under 25" },
+        { "max": 30, "points": 1, "label": "25 to 30" },
+        { "max": null, "points": 3, "label": "Over 30" }
+      ]
+    },
+    {
+      "id": "smoking",
+      "label": "Smoking status",
+      "field": "smoking",
+      "type": "map",
+      "map": { "never": 0, "former": 2, "current": 6 },
+      "valueLabels": {
+        "never": "Never smoked",
+        "former": "Former smoker",
+        "current": "Current smoker"
+      }
+    },
+    {
+      "id": "activity",
+      "label": "Physical activity",
+      "field": "activityMinutes",
+      "type": "range",
+      "unit": "min/week",
+      "bands": [
+        { "max": 30, "points": 3, "label": "Under 30 min/week" },
+        { "max": 150, "points": 1, "label": "30 to 149 min/week" },
+        { "max": null, "points": 0, "label": "150+ min/week" }
+      ]
+    },
+    {
+      "id": "familyHistory",
+      "label": "Family history",
+      "field": "familyHistory",
+      "type": "map",
+      "map": { "none": 0, "second": 2, "first": 4 },
+      "valueLabels": {
+        "none": "None recorded",
+        "second": "Second-degree relative",
+        "first": "First-degree relative"
+      }
+    },
+    {
+      "id": "diet",
+      "label": "Diet quality",
+      "field": "dietQuality",
+      "type": "map",
+      "map": { "good": 0, "average": 1, "poor": 2 },
+      "valueLabels": { "good": "Good", "average": "Average", "poor": "Poor" }
+    },
+    {
+      "id": "diabetesCoupling",
+      "label": "Diabetes risk carry-over",
+      "field": "diabetesBand",
+      "type": "context",
+      "map": { "low": 0, "moderate": 0, "high": 3 },
+      "valueLabels": {
+        "low": "Diabetes risk Low",
+        "moderate": "Diabetes risk Moderate",
+        "high": "Diabetes risk High"
+      },
+      "note": "Type-2 diabetes is itself a cardiovascular risk factor, so a High diabetes result feeds this score."
+    }
+  ]
+}

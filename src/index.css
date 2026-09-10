@@ -1,0 +1,182 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --band-low: 16 185 129; /* emerald-500 */
+    --band-moderate: 245 158 11; /* amber-500 */
+    --band-high: 244 63 94; /* rose-500 */
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    @apply bg-slate-50 text-slate-900 antialiased;
+  }
+
+  /* Numbers must not reflow while the count-up animation runs. */
+  .tnum {
+    font-variant-numeric: tabular-nums;
+  }
+
+  :focus-visible {
+    @apply outline-none ring-2 ring-indigo-500 ring-offset-2 ring-offset-white;
+  }
+}
+
+@layer components {
+  /*
+   * Three tiers of surface, and only three. The tier carries the meaning:
+   * raised = the answer, resting = the apparatus, inset = the evidence behind it.
+   * Radius descends with depth so a nested block never shares its parent's corner.
+   */
+  .card-raised {
+    @apply rounded-2xl border border-slate-200/70 bg-white shadow-raised;
+  }
+
+  .card {
+    @apply rounded-xl border border-slate-200 bg-white;
+  }
+
+  .inset {
+    @apply rounded-lg bg-slate-50;
+  }
+
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5
+           text-body font-semibold transition disabled:cursor-not-allowed disabled:opacity-40;
+  }
+
+  .btn-primary {
+    @apply btn bg-indigo-600 text-white hover:bg-indigo-700 active:bg-indigo-800;
+  }
+
+  .btn-ghost {
+    @apply btn border border-slate-200 bg-white text-slate-700 hover:bg-slate-50;
+  }
+
+  /* Sentence case, not tracked-out caps. A label should name a thing, not shout it. */
+  .label {
+    @apply block text-meta font-semibold text-slate-500;
+  }
+
+  /* Section heading. The step that gives the page a scanning path. */
+  .h-section {
+    @apply text-section font-semibold text-slate-900;
+  }
+
+  /* Card heading, one step down from a section. */
+  .h-card {
+    @apply text-subsection font-semibold text-slate-900;
+  }
+
+  .field {
+    @apply w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-body
+           text-slate-900 transition focus:border-indigo-400;
+  }
+}
+
+/* A swipeable strip should look swipeable, not like a scrolled document.
+   The persona strip still scrolls by touch, wheel and keyboard — only the
+   platform scrollbar is hidden. */
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Range inputs: a 44px touch target and a visible thumb on every browser. */
+input[type='range'] {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+input[type='range']::-webkit-slider-runnable-track {
+  height: 8px;
+  border-radius: 9999px;
+  background: theme('colors.slate.200');
+}
+
+input[type='range']::-moz-range-track {
+  height: 8px;
+  border-radius: 9999px;
+  background: theme('colors.slate.200');
+}
+
+input[type='range']::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  height: 22px;
+  width: 22px;
+  margin-top: -7px;
+  border-radius: 9999px;
+  background: #fff;
+  border: 3px solid theme('colors.indigo.600');
+  box-shadow: 0 1px 4px rgb(15 23 42 / 0.25);
+  transition: transform 0.12s ease;
+}
+
+input[type='range']::-moz-range-thumb {
+  height: 22px;
+  width: 22px;
+  border-radius: 9999px;
+  background: #fff;
+  border: 3px solid theme('colors.indigo.600');
+  box-shadow: 0 1px 4px rgb(15 23 42 / 0.25);
+}
+
+input[type='range']:active::-webkit-slider-thumb {
+  transform: scale(1.12);
+}
+
+/* Motion is opt-out at the OS level, not per-component. The count-up hook checks
+   the same preference itself, since it animates a value rather than a property. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* The print report is built for paper and never shown on screen. */
+.print-only {
+  display: none;
+}
+
+@media print {
+  @page {
+    margin: 14mm;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  .print-only {
+    display: block !important;
+  }
+
+  /* Keep band colours and table rules — a report printed in pure black and
+     white loses the Low/Moderate/High signal entirely. */
+  *,
+  *::before,
+  *::after {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  body {
+    background: #fff;
+  }
+}
