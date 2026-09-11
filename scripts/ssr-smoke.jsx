@@ -13,11 +13,21 @@ import {
   BiggestWinCallout,
   FactorDeltaList,
 } from '../src/components/whatif/SimulationInsights.jsx';
+import { HistoryForm } from '../src/components/history/HistoryForm.jsx';
+import {
+  FindingsBanner,
+  FindingsPanel,
+  NoFindingsLine,
+} from '../src/components/history/FindingsPanel.jsx';
+import { FindingProvenance } from '../src/components/history/FindingProvenance.jsx';
 import {
   PERSONAS,
   PERSONA_HIGH_RISK,
   PERSONA_STUDENT,
+  PERSONA_SENIOR,
 } from '../src/data/demoProfiles.js';
+import { findingsFor } from '../src/lib/history/findings.js';
+import { completenessOf } from '../src/lib/history/answers.js';
 import { scoreAll } from '../src/lib/scoring/scoreAll.js';
 import { applyOverrides, activeOverrides } from '../src/lib/simulation/applyOverrides.js';
 import { summarizeSimulation } from '../src/lib/simulation/summarizeSimulation.js';
@@ -111,6 +121,7 @@ for (const [name, s] of Object.entries(scenarios)) {
         simulated={s.summary.list.reduce((acc, c) => ({ ...acc, [c.id]: c.simulated }), {})}
         summary={s.summary}
         isSimulating={simulating}
+        findings={findingsFor(s.profile.history)}
       />,
     ),
   );
@@ -122,12 +133,49 @@ for (const [name, s] of Object.entries(scenarios)) {
             key={id}
             result={s.summary.perCondition[id].simulated}
             initialProvenanceOpen
+            caveat={findingsFor(s.profile.history).caveats.find((c) => c.appliesTo === id)}
           />
         ))}
       </>,
     ),
   );
 }
+
+// Health history renders against every persona, including the empty history a
+// hand-written profile would have. The Senior Citizen is the one that fires a
+// combination rule AND a caveat, so she exercises the most code here.
+console.log(`
+=== Health history ===`);
+const historyProfiles = [
+  ...PERSONAS,
+  { ...PERSONA_STUDENT, id: 'no-history', name: 'Profile with no history', history: undefined },
+];
+
+for (const p of historyProfiles) {
+  const result = findingsFor(p.history);
+  const completeness = completenessOf(p.history);
+
+  attempt(`  form: ${p.name}`, () =>
+    renderToString(<HistoryForm profile={p} onChange={noop} />),
+  );
+  attempt(`  banner: ${p.name} (${result.counts.total})`, () =>
+    renderToString(<FindingsBanner result={result} />),
+  );
+  attempt(`  no-findings line: ${p.name}`, () =>
+    renderToString(<NoFindingsLine result={result} completeness={completeness} />),
+  );
+  attempt(`  panel + drawers: ${p.name}`, () =>
+    renderToString(
+      <FindingsPanel result={result}>
+        {(finding) => <FindingProvenance finding={finding} />}
+      </FindingsPanel>,
+    ),
+  );
+}
+
+attempt('  dashboard: persona with caveat', () =>
+  renderToString(<Dashboard profile={PERSONA_SENIOR} setProfile={noop} onRestart={noop} />),
+);
 
 console.log(bad === 0 ? '\nSSR smoke: PASS\n' : `\nSSR smoke: FAIL (${bad})\n`);
 if (bad) process.exit(1);

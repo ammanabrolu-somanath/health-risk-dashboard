@@ -14,6 +14,29 @@
  *                     carry-over into cardiovascular switches off
  */
 
+import { QUESTION_IDS } from './history/questions.js';
+
+/**
+ * Build a complete history from the exceptions.
+ *
+ * Every question a persona is not listed against is answered "no" — these
+ * people have all sat through the whole questionnaire, so a blank would mean
+ * "not asked", which is a different and less useful state to demo.
+ */
+function historyOf({ yes = {}, unsure = [] } = {}) {
+  const answers = {};
+  for (const id of QUESTION_IDS) answers[id] = 'no';
+  for (const id of unsure) answers[id] = 'unsure';
+
+  const notes = {};
+  for (const [id, note] of Object.entries(yes)) {
+    answers[id] = 'yes';
+    if (note) notes[id] = note;
+  }
+
+  return { answers, notes };
+}
+
 export const PERSONA_STUDENT = {
   id: 'college-student',
   name: 'Healthy College Student',
@@ -33,6 +56,8 @@ export const PERSONA_STUDENT = {
   diastolic: 70,
   onBpMedication: false,
   priorHighGlucose: false,
+  /** Nothing fires. Exercises the "No findings identified" indicator. */
+  history: historyOf(),
 };
 
 export const PERSONA_OFFICE = {
@@ -54,6 +79,11 @@ export const PERSONA_OFFICE = {
   diastolic: 84,
   onBpMedication: false,
   priorHighGlucose: false,
+  /** One low-tier finding, plus a "not sure" that must NOT fire anything. */
+  history: historyOf({
+    yes: { 'cc-cholesterol': null },
+    unsure: ['fh-cancer-early'],
+  }),
 };
 
 export const PERSONA_HIGH_RISK = {
@@ -75,6 +105,22 @@ export const PERSONA_HIGH_RISK = {
   diastolic: 86,
   onBpMedication: false,
   priorHighGlucose: false,
+  /**
+   * Two low-tier findings and DELIBERATELY NO PRIOR EVENT.
+   *
+   * This is the profile the what-if arc is tuned to. A reported heart attack
+   * would caveat the cardiovascular score, and the demo would end by telling
+   * someone with established disease that their risk is now Moderate. The prior
+   * event lives on the Senior Citizen instead, off the demo path.
+   */
+  history: historyOf({
+    yes: {
+      'cc-cholesterol': null,
+      'cc-sleep-apnoea': null,
+      'sh-surgery': 'Knee arthroscopy, 2018',
+      'ma-daily-meds': 'Statin',
+    },
+  }),
 };
 
 export const PERSONA_SENIOR = {
@@ -96,6 +142,23 @@ export const PERSONA_SENIOR = {
   diastolic: 78,
   onBpMedication: false,
   priorHighGlucose: true,
+  /**
+   * The combination rule and the caveat, on one persona.
+   *
+   * Recurrent infections with changed eyesight fires C-3 as a single
+   * "discuss promptly" finding — a pattern associated with unrecognised high
+   * blood glucose, which none of the three scoring models can see. Her prior
+   * stroke simultaneously caveats the cardiovascular score.
+   */
+  history: historyOf({
+    yes: {
+      'mh-stroke': '2019',
+      'inf-recurrent': null,
+      'sx-vision': null,
+      'ma-daily-meds': 'Blood thinner',
+    },
+    unsure: ['fh-kidney'],
+  }),
 };
 
 /** Display order: ascending overall risk, so the strip reads left to right. */

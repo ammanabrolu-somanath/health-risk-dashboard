@@ -1,0 +1,355 @@
+{
+  "id": "health-history-findings",
+  "label": "Health history findings",
+  "blurb": "Findings raised from health-history answers. These are conversation priorities, not risk points — nothing in this file affects any risk score.",
+  "adaptation": "Tiers describe how soon a finding is worth discussing with a clinician, not how urgent care is. The application does not triage, diagnose, or recommend treatment. A finding fires only on an explicit 'yes'; 'not sure' and unanswered never fire.",
+
+  "tiers": [
+    {
+      "id": "promptly",
+      "label": "Discuss promptly",
+      "rank": 3,
+      "meaning": "Raise this at the start of the next conversation with a clinician."
+    },
+    {
+      "id": "soon",
+      "label": "Discuss soon",
+      "rank": 2,
+      "meaning": "Worth a dedicated conversation rather than waiting for a routine visit."
+    },
+    {
+      "id": "mention",
+      "label": "Worth mentioning",
+      "rank": 1,
+      "meaning": "Useful context for a clinician who is already reviewing your history."
+    }
+  ],
+
+  "sources": {
+    "S-01": {
+      "org": "Gaziano et al., The Lancet 2008; ACC/AHA primary prevention guidance",
+      "sourceTier": "T2",
+      "claim": "Risk models for first cardiovascular events do not apply to people with established disease.",
+      "candidateDocument": "Already cited in this repository for the cardiovascular table; plus the ACC/AHA primary-prevention guideline",
+      "verified": false
+    },
+    "S-02": {
+      "org": "National Cancer Institute (NIH)",
+      "sourceTier": "T1",
+      "claim": "A prior cancer diagnosis is relevant history for ongoing care.",
+      "candidateDocument": "NCI survivorship and follow-up care guidance",
+      "verified": false
+    },
+    "S-03": {
+      "org": "CDC; American Society of Hematology",
+      "sourceTier": "T1",
+      "claim": "Prior venous thromboembolism is relevant standing history.",
+      "candidateDocument": "CDC venous thromboembolism pages; ASH VTE guidelines",
+      "verified": false
+    },
+    "S-04": {
+      "org": "American Heart Association / American Stroke Association",
+      "sourceTier": "T1",
+      "claim": "Transient one-sided neurological symptoms warrant prompt evaluation; family stroke history is a recognised risk factor.",
+      "candidateDocument": "AHA/ASA stroke and TIA guidance; F.A.S.T. warning signs",
+      "verified": false
+    },
+    "S-05": {
+      "org": "National Cancer Institute (NIH); NCCN",
+      "sourceTier": "T1",
+      "claim": "Cancer in a first-degree relative before age 50 raises familial-risk considerations.",
+      "candidateDocument": "NCI genetic-risk assessment; NCCN genetic/familial risk guidelines",
+      "verified": false
+    },
+    "S-06": {
+      "org": "National Kidney Foundation; KDIGO",
+      "sourceTier": "T1",
+      "claim": "Reduced kidney function and a family history of kidney failure are recognised risk contexts.",
+      "candidateDocument": "KDIGO CKD evaluation and management guideline",
+      "verified": false
+    },
+    "S-07": {
+      "org": "American College of Cardiology / American Heart Association",
+      "sourceTier": "T1",
+      "claim": "Chest pain warrants evaluation, and breathlessness is a recognised accompanying symptom.",
+      "candidateDocument": "AHA/ACC guideline for the evaluation and diagnosis of chest pain (2021)",
+      "verified": false
+    },
+    "S-08": {
+      "org": "NHLBI (NIH); American Heart Association",
+      "sourceTier": "T1",
+      "claim": "New breathlessness on exertion is a recognised warning sign.",
+      "candidateDocument": "NHLBI heart-failure signs; AHA heart-failure warning signs",
+      "verified": false
+    },
+    "S-09": {
+      "org": "NICE (UK)",
+      "sourceTier": "T1",
+      "claim": "Unexplained weight loss meets referral thresholds, and weight loss with fatigue raises concern.",
+      "candidateDocument": "NICE NG12, suspected cancer: recognition and referral",
+      "verified": false
+    },
+    "S-10": {
+      "org": "NHS; academic medical centre patient guidance",
+      "sourceTier": "T3",
+      "claim": "Persistent fatigue is non-specific on its own and meaningful in combination.",
+      "candidateDocument": "NHS tiredness and fatigue guidance; Mayo Clinic symptom pages",
+      "verified": false,
+      "weak": true
+    },
+    "S-11": {
+      "org": "CDC; American Diabetes Association",
+      "sourceTier": "T1",
+      "claim": "Blurred vision and recurrent infections are recognised signs of high blood glucose.",
+      "candidateDocument": "CDC diabetes symptoms; ADA Standards of Care; National Eye Institute retinopathy pages",
+      "verified": false
+    },
+    "S-12": {
+      "org": "American College of Cardiology / American Heart Association",
+      "sourceTier": "T1",
+      "claim": "Raised cholesterol is a recognised cardiovascular risk factor.",
+      "candidateDocument": "AHA/ACC blood cholesterol management guideline",
+      "verified": false
+    },
+    "S-13": {
+      "org": "American Academy of Sleep Medicine",
+      "sourceTier": "T1",
+      "claim": "Sleep apnoea is associated with cardiovascular and metabolic risk.",
+      "candidateDocument": "AASM obstructive sleep apnoea guidance",
+      "verified": false
+    },
+    "S-14": {
+      "org": "AAAAI; NIAID (NIH)",
+      "sourceTier": "T1",
+      "claim": "Prior anaphylaxis and known drug allergy are standing clinical facts requiring a plan.",
+      "candidateDocument": "AAAAI anaphylaxis practice parameter; NIAID allergy guidelines",
+      "verified": false
+    },
+    "S-15": {
+      "org": "NHS; general intake-history convention",
+      "sourceTier": "T3",
+      "claim": "Recent unplanned hospitalisation is relevant recent history.",
+      "candidateDocument": "To be pinned to a concrete source, or this finding downgraded to documentation only",
+      "verified": false,
+      "weak": true
+    },
+    "S-16": {
+      "org": "UK Chief Medical Officers; NIAAA (NIH)",
+      "sourceTier": "T1",
+      "claim": "14 units per week is a published low-risk drinking threshold.",
+      "candidateDocument": "UK CMO low-risk drinking guidelines (the source of the 14-unit figure); NIAAA drinking levels",
+      "verified": false
+    }
+  },
+
+  "single": [
+    {
+      "id": "f-chest-discomfort",
+      "questionId": "sx-chest-discomfort",
+      "tier": "promptly",
+      "sourceKey": "S-07",
+      "summary": "Chest discomfort in the last 3 months",
+      "rationale": "Chest pain, pressure or tightness is evaluated rather than watched, whatever the estimated risk score says."
+    },
+    {
+      "id": "f-weight-loss",
+      "questionId": "sx-weight-loss",
+      "tier": "promptly",
+      "sourceKey": "S-09",
+      "summary": "Unintentional weight loss of 5 kg or more",
+      "rationale": "Losing weight without trying meets published referral thresholds on its own."
+    },
+    {
+      "id": "f-neuro-episodes",
+      "questionId": "sx-neuro-episodes",
+      "tier": "promptly",
+      "sourceKey": "S-04",
+      "summary": "Episodes of one-sided numbness, weakness or word-finding difficulty",
+      "rationale": "Transient neurological episodes are evaluated promptly even after they have resolved."
+    },
+    {
+      "id": "f-breathless",
+      "questionId": "sx-breathless",
+      "tier": "soon",
+      "sourceKey": "S-08",
+      "summary": "New breathlessness on everyday exertion",
+      "rationale": "Becoming breathless doing things that did not used to cause it is a recognised warning sign."
+    },
+    {
+      "id": "f-vision",
+      "questionId": "sx-vision",
+      "tier": "soon",
+      "sourceKey": "S-11",
+      "summary": "Eyesight blurred or noticeably changed",
+      "rationale": "Vision change has many causes, several of which are worth identifying early."
+    },
+    {
+      "id": "f-family-cancer-early",
+      "questionId": "fh-cancer-early",
+      "tier": "soon",
+      "sourceKey": "S-05",
+      "summary": "Cancer in a close relative before age 50",
+      "rationale": "Early-onset cancer in a first-degree relative changes what screening may be appropriate."
+    },
+    {
+      "id": "f-kidney",
+      "questionId": "cc-kidney",
+      "tier": "soon",
+      "sourceKey": "S-06",
+      "summary": "Told you have kidney disease or reduced kidney function",
+      "rationale": "Kidney function affects both cardiovascular risk and how medicines are handled."
+    },
+    {
+      "id": "f-anaphylaxis",
+      "questionId": "ma-anaphylaxis",
+      "tier": "soon",
+      "sourceKey": "S-14",
+      "summary": "Previous severe allergic reaction needing emergency treatment",
+      "rationale": "A prior severe reaction is a standing fact that warrants an agreed plan."
+    },
+    {
+      "id": "f-recurrent-infection",
+      "questionId": "inf-recurrent",
+      "tier": "soon",
+      "sourceKey": "S-11",
+      "summary": "Three or more courses of antibiotics in 12 months",
+      "rationale": "Repeated infections can point to something underlying rather than bad luck."
+    },
+    {
+      "id": "f-alcohol",
+      "questionId": "ls-alcohol",
+      "tier": "soon",
+      "sourceKey": "S-16",
+      "summary": "Drinking above 14 units in a typical week",
+      "rationale": "Above the published low-risk threshold, which none of the three risk models asks about."
+    },
+    {
+      "id": "f-cancer-history",
+      "questionId": "mh-cancer",
+      "tier": "mention",
+      "sourceKey": "S-02",
+      "summary": "Previous cancer diagnosis",
+      "rationale": "Relevant standing history for anyone reviewing your record."
+    },
+    {
+      "id": "f-clot-history",
+      "questionId": "mh-clot",
+      "tier": "mention",
+      "sourceKey": "S-03",
+      "summary": "Previous blood clot in a leg or lung",
+      "rationale": "Relevant standing history, particularly around surgery and immobility."
+    },
+    {
+      "id": "f-family-stroke",
+      "questionId": "fh-stroke",
+      "tier": "mention",
+      "sourceKey": "S-04",
+      "summary": "Stroke in a parent, brother or sister",
+      "rationale": "Family stroke history is context none of the three risk tables records."
+    },
+    {
+      "id": "f-family-kidney",
+      "questionId": "fh-kidney",
+      "tier": "mention",
+      "sourceKey": "S-06",
+      "summary": "Kidney failure in a parent, brother or sister",
+      "rationale": "Family kidney failure is a recognised risk context."
+    },
+    {
+      "id": "f-fatigue",
+      "questionId": "sx-fatigue",
+      "tier": "mention",
+      "sourceKey": "S-10",
+      "summary": "Unusual tiredness lasting more than two weeks",
+      "rationale": "Non-specific on its own, which is why it sits at the lowest tier; it carries more weight in combination."
+    },
+    {
+      "id": "f-cholesterol",
+      "questionId": "cc-cholesterol",
+      "tier": "mention",
+      "sourceKey": "S-12",
+      "summary": "Told your cholesterol is high",
+      "rationale": "The cardiovascular model was chosen because it needs no blood work, so it never sees this."
+    },
+    {
+      "id": "f-sleep-apnoea",
+      "questionId": "cc-sleep-apnoea",
+      "tier": "mention",
+      "sourceKey": "S-13",
+      "summary": "Told you have sleep apnoea",
+      "rationale": "Associated with both cardiovascular and metabolic risk, and recorded nowhere else here."
+    },
+    {
+      "id": "f-drug-allergy",
+      "questionId": "ma-drug-allergy",
+      "tier": "mention",
+      "sourceKey": "S-14",
+      "summary": "Known allergy or bad reaction to a medicine",
+      "rationale": "Standing fact worth having on the record before anything is prescribed."
+    },
+    {
+      "id": "f-hospital",
+      "questionId": "sh-hospital",
+      "tier": "mention",
+      "sourceKey": "S-15",
+      "summary": "Unplanned overnight hospital stay in the last 5 years",
+      "rationale": "Recent unplanned admission is relevant recent history."
+    }
+  ],
+
+  "combinations": [
+    {
+      "id": "c-cardiac",
+      "label": "C-1",
+      "tier": "promptly",
+      "sourceKey": "S-07",
+      "triggers": [
+        { "questionId": "sx-chest-discomfort", "value": "yes" },
+        { "questionId": "sx-breathless", "value": "yes" }
+      ],
+      "supersedes": ["f-chest-discomfort", "f-breathless"],
+      "summary": "Chest discomfort together with new breathlessness",
+      "rationale": "Breathlessness alone sits a tier lower. Occurring with chest discomfort it is a recognised accompanying feature rather than an independent complaint, so the pair is raised as one finding."
+    },
+    {
+      "id": "c-systemic",
+      "label": "C-2",
+      "tier": "promptly",
+      "sourceKey": "S-09",
+      "triggers": [
+        { "questionId": "sx-weight-loss", "value": "yes" },
+        { "questionId": "sx-fatigue", "value": "yes" }
+      ],
+      "supersedes": ["f-weight-loss", "f-fatigue"],
+      "summary": "Unintentional weight loss together with persistent fatigue",
+      "rationale": "Fatigue is deliberately the lowest tier on its own because it is too non-specific to say anything useful about. Paired with unintentional weight loss it stops being non-specific."
+    },
+    {
+      "id": "c-glycaemic",
+      "label": "C-3",
+      "tier": "promptly",
+      "sourceKey": "S-11",
+      "triggers": [
+        { "questionId": "inf-recurrent", "value": "yes" },
+        { "questionId": "sx-vision", "value": "yes" }
+      ],
+      "supersedes": ["f-recurrent-infection", "f-vision"],
+      "summary": "Recurrent infections together with changed eyesight",
+      "rationale": "The combination the risk score cannot see. The diabetes instrument asks nothing about symptoms, so a person can score Low while reporting the pattern most associated with unrecognised high blood glucose."
+    }
+  ],
+
+  "caveats": [
+    {
+      "id": "cv-prior-event",
+      "appliesTo": "cardiovascular",
+      "sourceKey": "S-01",
+      "anyOf": [
+        { "questionId": "mh-heart-attack", "value": "yes" },
+        { "questionId": "mh-stroke", "value": "yes" }
+      ],
+      "short": "Estimates first-event risk; a prior event is reported.",
+      "long": "This instrument estimates the risk of a FIRST cardiovascular event. A heart attack or stroke has been reported here, which places this person outside the population the model was built for. The score is still shown, and the arithmetic behind it is unchanged, but it does not carry the same meaning it carries for someone without a prior event."
+    }
+  ]
+}

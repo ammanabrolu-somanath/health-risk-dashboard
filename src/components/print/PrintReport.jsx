@@ -1,6 +1,8 @@
 import { deriveMetrics } from '../../lib/scoring/derive.js';
 import { CONDITION_IDS, RULES } from '../../lib/scoring/scoreAll.js';
 import { BAND_STYLE, signed } from '../../lib/format.js';
+import { completenessOf, positiveAnswers } from '../../lib/history/answers.js';
+import { ANSWER_LABEL } from '../../data/history/questions.js';
 
 /**
  * Consultation-style summary, built for print.
@@ -26,8 +28,16 @@ function Row({ label, value }) {
   );
 }
 
-export function PrintReport({ profile, current, simulated, summary, isSimulating }) {
+export function PrintReport({ profile, current, simulated, summary, isSimulating, findings }) {
   const enriched = deriveMetrics(profile);
+
+  // Health history. A consultation document is the one place where what was
+  // asked and denied matters as much as what was reported, so the counts travel
+  // with the positives — a blank is never presented as a negative finding.
+  const completeness = completenessOf(profile.history);
+  const positives = positiveAnswers(profile.history);
+  const caveats = Object.fromEntries((findings?.caveats ?? []).map((c) => [c.appliesTo, c]));
+  const reportFindings = findings?.findings ?? [];
   const bpLabel =
     RULES.hypertension.factors.find((f) => f.id === 'bpCategory').valueLabels[
       enriched.bpCategory
@@ -106,7 +116,10 @@ export function PrintReport({ profile, current, simulated, summary, isSimulating
               const r = shown[id];
               return (
                 <tr key={id} className="border-b border-slate-200">
-                  <td className="py-1">{r.label}</td>
+                  <td className="py-1">
+                    {r.label}
+                    {caveats[id] && <span className="font-bold"> &#9888;</span>}
+                  </td>
                   <td className="py-1 text-right tnum">
                     {isSimulating && current[id].index !== r.index && (
                       <span className="text-slate-400">{current[id].index} → </span>
@@ -128,6 +141,11 @@ export function PrintReport({ profile, current, simulated, summary, isSimulating
           Each condition uses its own instrument and its own thresholds, so the indices are not
           directly comparable to one another.
         </p>
+        {Object.values(caveats).map((cv) => (
+          <p key={cv.id} className="mt-1 text-meta font-medium text-slate-900">
+            &#9888; {cv.long}
+          </p>
+        ))}
       </section>
 
       {/* Simulated changes — only when the what-if simulator is active */}
@@ -165,6 +183,69 @@ export function PrintReport({ profile, current, simulated, summary, isSimulating
           </p>
         </section>
       )}
+
+      {/* Health history — reported positives, findings, and what was NOT reported.
+          The counts are load-bearing: a clinician reading this has to be able to
+          tell "asked and denied" from "never asked", which is the whole reason
+          the questionnaire has a third answer state. */}
+      <section className="mb-4" style={{ breakInside: 'avoid' }}>
+        <h2 className="mb-1 text-xs font-bold uppercase tracking-widest text-slate-500">
+          Health history
+        </h2>
+
+        {completeness.answered === 0 ? (
+          <p className="text-slate-500">No health-history questions were answered.</p>
+        ) : (
+          <>
+            {reportFindings.length > 0 ? (
+              <div className="mb-2">
+                <p className="font-semibold">Findings to discuss</p>
+                <ul className="ml-4 list-disc">
+                  {reportFindings.map((f) => (
+                    <li key={f.id}>
+                      <span className="font-semibold uppercase">{f.tierLabel}</span>
+                      {f.kind === 'combination' && <span> ({f.label})</span>} — {f.summary}
+                      <span className="text-slate-500">
+                        {' '}
+                        [{f.evidence.map((e) => e.text).join(' + ')}]
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : (
+              <p className="mb-2 font-semibold">
+                No findings identified from {completeness.answered} answered questions.
+              </p>
+            )}
+
+            {positives.length > 0 && (
+              <div className="mb-2">
+                <p className="font-semibold">Reported</p>
+                <ul className="ml-4 list-disc">
+                  {positives.map((q) => (
+                    <li key={q.id}>
+                      {q.text} <span className="font-semibold">Yes</span>
+                      {q.note && <span> — {q.note}</span>}
+                      <span className="text-slate-500"> ({q.window.toLowerCase()})</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            <p className="text-slate-500">
+              Answered {completeness.answered} of {completeness.total} —{' '}
+              <span className="tnum">{completeness.yes}</span> yes,{' '}
+              <span className="tnum">{completeness.no}</span> no,{' '}
+              <span className="tnum">{completeness.unsure}</span> not sure,{' '}
+              <span className="tnum">{completeness.unanswered}</span> unanswered. Findings are
+              conversation priorities raised by predefined rules — not a diagnosis, and not a
+              measure of clinical urgency.
+            </p>
+          </>
+        )}
+      </section>
 
       {/* Contributing factors */}
       <section className="mb-4">

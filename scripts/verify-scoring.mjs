@@ -27,6 +27,15 @@ import {
   PERSONA_HIGH_RISK,
   PERSONA_SENIOR,
 } from '../src/data/demoProfiles.js';
+import { evaluateFindings, caveatFor } from '../src/lib/history/evaluateFindings.js';
+import {
+  withAnswer,
+  withNote,
+  completenessOf,
+  getNote,
+  positiveAnswers,
+} from '../src/lib/history/answers.js';
+import { QUESTIONS, QUESTION_IDS, NOTE_MAX } from '../src/data/history/questions.js';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const rules = (name) =>
@@ -313,7 +322,357 @@ for (const id of ['diabetes', 'hypertension', 'cardiovascular']) {
   );
 }
 
+
+// ============================================================ health history
+//
+// Parity with the scoring assertions above. The findings engine is a second
+// rule-driven signal on the same page, and the same argument applies to it: a
+// drawer that cites a rule which did not actually fire would look exactly like
+// a correct one. These checks are what make it trustworthy.
+
+const FLAGS = JSON.parse(readFileSync(join(here, '../src/data/rules/flags.rules.json'), 'utf8'));
+
+const blankHistory = { answers: {}, notes: {} };
+const historyWith = (...pairs) =>
+  pairs.reduce((acc, [id, v]) => withAnswer(acc, id, v), blankHistory);
+const findings = (history) => evaluateFindings(history, FLAGS);
+
+console.log('\n=== Flag table integrity ===');
+
+const qids = new Set(QUESTION_IDS);
+const tierIds = new Set(FLAGS.tiers.map((t) => t.id));
+const sourceKeys = new Set(Object.keys(FLAGS.sources));
+const singleIds = new Set(FLAGS.single.map((f) => f.id));
+
+check('question ids are unique', new Set(QUESTION_IDS).size, QUESTIONS.length);
+check('tier ids are unique', tierIds.size, FLAGS.tiers.length);
+check('tier ranks are unique', new Set(FLAGS.tiers.map((t) => t.rank)).size, FLAGS.tiers.length);
+check('flag ids are unique', singleIds.size, FLAGS.single.length);
+
+for (const f of FLAGS.single) {
+  check(`${f.id}: targets a real question`, qids.has(f.questionId), true);
+  check(`${f.id}: has a known tier`, tierIds.has(f.tier), true);
+  check(`${f.id}: cites a real source`, sourceKeys.has(f.sourceKey), true);
+  check(`${f.id}: has a summary`, typeof f.summary === 'string' && f.summary.length > 0, true);
+  check(`${f.id}: has a rationale`, typeof f.rationale === 'string' && f.rationale.length > 0, true);
+}
+
+for (const c of FLAGS.combinations) {
+  check(`${c.id}: has at least two triggers`, c.triggers.length >= 2, true);
+  check(`${c.id}: cites a real source`, sourceKeys.has(c.sourceKey), true);
+  check(`${c.id}: has a known tier`, tierIds.has(c.tier), true);
+  for (const t of c.triggers) {
+    check(`${c.id}: trigger ${t.questionId} exists`, qids.has(t.questionId), true);
+  }
+  for (const sup of c.supersedes) {
+    check(`${c.id}: supersedes real flag ${sup}`, singleIds.has(sup), true);
+  }
+}
+
+for (const cv of FLAGS.caveats) {
+  check(`${cv.id}: cites a real source`, sourceKeys.has(cv.sourceKey), true);
+  for (const a of cv.anyOf) {
+    check(`${cv.id}: trigger ${a.questionId} exists`, qids.has(a.questionId), true);
+  }
+}
+
+// Every source must be reachable from something, or it is dead weight nobody
+// will ever be asked to verify.
+const usedSources = new Set([
+  ...FLAGS.single.map((f) => f.sourceKey),
+  ...FLAGS.combinations.map((c) => c.sourceKey),
+  ...FLAGS.caveats.map((c) => c.sourceKey),
+]);
+check('every source is cited by something', usedSources.size, sourceKeys.size);
+
+for (const [key, src] of Object.entries(FLAGS.sources)) {
+  check(`${key}: names an organisation`, typeof src.org === 'string' && src.org.length > 0, true);
+  check(
+    `${key}: states the claim it supports`,
+    typeof src.claim === 'string' && src.claim.length > 0,
+    true,
+  );
+  check(`${key}: declares a verification state`, typeof src.verified === 'boolean', true);
+}
+
+console.log(
+  `  ${FLAGS.single.length} single rules, ${FLAGS.combinations.length} combinations, ${sourceKeys.size} sources`,
+);
+
+// ------------------------------------------------------- firing discipline
+console.log('\n=== Findings: what fires and what does not ===');
+
+check('empty history raises nothing', findings(blankHistory).counts.total, 0);
+check('empty history raises no caveat', findings(blankHistory).caveats.length, 0);
+
+const allNo = historyWith(...QUESTION_IDS.map((id) => [id, 'no']));
+check('every answer "no" raises nothing', findings(allNo).counts.total, 0);
+
+// The reason the third answer state exists. If "not sure" ever fired, the
+// questionnaire would be punishing people for honesty about their own records.
+const allUnsure = historyWith(...QUESTION_IDS.map((id) => [id, 'unsure']));
+check('every answer "not sure" raises nothing', findings(allUnsure).counts.total, 0);
+check('"not sure" raises no caveat', findings(allUnsure).caveats.length, 0);
+
+for (const f of FLAGS.single) {
+  const fired = findings(historyWith([f.questionId, 'yes']));
+  check(`${f.id}: fires on yes`, fired.findings.some((x) => x.id === f.id), true);
+  check(`${f.id}: at its declared tier`, fired.findings.find((x) => x.id === f.id)?.tier, f.tier);
+  check(`${f.id}: silent on no`, findings(historyWith([f.questionId, 'no'])).counts.total, 0);
+  check(`${f.id}: silent on unsure`, findings(historyWith([f.questionId, 'unsure'])).counts.total, 0);
+}
+
+// --------------------------------------------------------- combinations
+console.log('\n=== Combination rules ===');
+
+for (const c of FLAGS.combinations) {
+  const all = historyWith(...c.triggers.map((t) => [t.questionId, t.value]));
+  const result = findings(all);
+
+  check(
+    `${c.id}: fires when every trigger matches`,
+    result.findings.some((f) => f.id === c.id),
+    true,
+  );
+
+  // The merge. Two answers must produce one finding, not three.
+  check(`${c.id}: replaces the flags it supersedes`, result.counts.total, 1);
+  check(`${c.id}: the survivor is the combination`, result.findings[0].kind, 'combination');
+  for (const sup of c.supersedes) {
+    check(`${c.id}: ${sup} is absorbed`, result.findings.some((f) => f.id === sup), false);
+  }
+
+  // A partial match must fall back to the individual findings.
+  for (const t of c.triggers) {
+    const partial = findings(historyWith([t.questionId, 'yes']));
+    check(
+      `${c.id}: does not fire on ${t.questionId} alone`,
+      partial.findings.some((f) => f.id === c.id),
+      false,
+    );
+  }
+
+  // One trigger answered "not sure" must not be enough.
+  const withUnsure = historyWith(
+    [c.triggers[0].questionId, 'yes'],
+    [c.triggers[1].questionId, 'unsure'],
+  );
+  check(
+    `${c.id}: does not fire when a trigger is "not sure"`,
+    findings(withUnsure).findings.some((f) => f.id === c.id),
+    false,
+  );
+}
+
+// --------------------------------------------------------------- caveats
+console.log('\n=== Prior-event caveat ===');
+
+const afterMI = findings(historyWith(['mh-heart-attack', 'yes']));
+const afterStroke = findings(historyWith(['mh-stroke', 'yes']));
+const afterBoth = findings(historyWith(['mh-heart-attack', 'yes'], ['mh-stroke', 'yes']));
+
+check('heart attack raises the caveat', Boolean(caveatFor(afterMI, 'cardiovascular')), true);
+check('stroke raises the caveat', Boolean(caveatFor(afterStroke, 'cardiovascular')), true);
+check('both together raise it once', afterBoth.caveats.length, 1);
+check('both together cite both answers', afterBoth.caveats[0].evidence.length, 2);
+
+// The caveat is cardiovascular-only. Prior high glucose is already a scored
+// field on the diabetes side, so those instruments are unaffected.
+check('diabetes is not caveated', caveatFor(afterMI, 'diabetes'), null);
+check('hypertension is not caveated', caveatFor(afterMI, 'hypertension'), null);
+
+// A prior event is context, not a conversation topic — it must not also become
+// a tiered finding.
+check('prior heart attack raises no finding', afterMI.counts.total, 0);
+check('prior stroke raises no finding', afterStroke.counts.total, 0);
+check(
+  'caveat is silent on "not sure"',
+  findings(historyWith(['mh-stroke', 'unsure'])).caveats.length,
+  0,
+);
+
+// ---------------------------------------------------------- answer store
+console.log('\n=== Answer handling ===');
+
+const noted = withNote(withAnswer(blankHistory, 'sh-surgery', 'yes'), 'sh-surgery', 'Knee, 2018');
+check('a note is stored against a yes', getNote(noted, 'sh-surgery'), 'Knee, 2018');
+
+// A note surviving a change to "no" would print in the export as a denial with
+// supporting detail attached.
+check(
+  'changing to no drops the note',
+  getNote(withAnswer(noted, 'sh-surgery', 'no'), 'sh-surgery'),
+  '',
+);
+check(
+  'changing to unsure drops the note',
+  getNote(withAnswer(noted, 'sh-surgery', 'unsure'), 'sh-surgery'),
+  '',
+);
+check(
+  'clearing the answer drops the note',
+  getNote(withAnswer(noted, 'sh-surgery', null), 'sh-surgery'),
+  '',
+);
+
+const longNote = withNote(blankHistory, 'sh-surgery', 'x'.repeat(400));
+check('notes are truncated, not rejected', getNote(longNote, 'sh-surgery').length, NOTE_MAX);
+
+const mixed = historyWith(['mh-cancer', 'yes'], ['mh-clot', 'no'], ['fh-stroke', 'unsure']);
+const mixedCounts = completenessOf(mixed);
+check('counts: yes', mixedCounts.yes, 1);
+check('counts: no', mixedCounts.no, 1);
+check('counts: unsure', mixedCounts.unsure, 1);
+check('counts: unanswered', mixedCounts.unanswered, QUESTIONS.length - 3);
+check(
+  'counts sum to the total',
+  mixedCounts.yes + mixedCounts.no + mixedCounts.unsure + mixedCounts.unanswered,
+  QUESTIONS.length,
+);
+check('"not sure" counts as answered', mixedCounts.answered, 3);
+check('positives list only yes answers', positiveAnswers(mixed).length, 1);
+
+// ------------------------------------------------------- persona findings
+console.log('\n=== Persona histories ===');
+
+for (const p of PERSONAS) {
+  const c = completenessOf(p.history);
+  check(`${p.id}: history is complete`, c.unanswered, 0);
+  check(`${p.id}: every answer is valid`, c.answered, QUESTIONS.length);
+}
+
+const student = findings(PERSONA_STUDENT.history);
+check('student: no findings', student.counts.total, 0);
+check('student: no caveat', student.caveats.length, 0);
+check('student: nothing uncertain', completenessOf(PERSONA_STUDENT.history).unsure, 0);
+
+const office = findings(PERSONA_OFFICE.history);
+check('office: one finding', office.counts.total, 1);
+check('office: at the lowest tier', office.counts.mention, 1);
+check('office: has an uncertain answer', completenessOf(PERSONA_OFFICE.history).unsure, 1);
+
+const highRisk = findings(PERSONA_HIGH_RISK.history);
+check('high-risk: two findings', highRisk.counts.total, 2);
+check('high-risk: both at the lowest tier', highRisk.counts.mention, 2);
+
+// THE ARC PROTECTION. The what-if demo ends by moving this persona from High to
+// Moderate on all three. A reported prior event would caveat the cardiovascular
+// score and make that ending incoherent, so this persona must never have one.
+check(
+  'high-risk: reports no prior heart attack',
+  PERSONA_HIGH_RISK.history.answers['mh-heart-attack'],
+  'no',
+);
+check('high-risk: reports no prior stroke', PERSONA_HIGH_RISK.history.answers['mh-stroke'], 'no');
+check('high-risk: carries no caveat', highRisk.caveats.length, 0);
+
+const senior = findings(PERSONA_SENIOR.history);
+check('senior: one finding', senior.counts.total, 1);
+check('senior: it is discuss-promptly', senior.counts.promptly, 1);
+check('senior: raised by the combination rule', senior.findings[0].id, 'c-glycaemic');
+check('senior: from two answers', senior.findings[0].evidence.length, 2);
+check('senior: carries the cardiovascular caveat', Boolean(caveatFor(senior, 'cardiovascular')), true);
+check('senior: the caveat cites her stroke', senior.caveats[0].evidence[0].questionId, 'mh-stroke');
+check('senior: the caveat carries her note', senior.caveats[0].evidence[0].note, '2019');
+
+// -------------------------------------------------- provenance integrity
+//
+// The findings-side equivalent of the rule-row assertions above: every finding
+// on screen must be traceable to answers that genuinely say what it claims.
+console.log('\n=== Findings provenance ===');
+
+let evidenceRows = 0;
+for (const p of PERSONAS) {
+  const r = findings(p.history);
+  for (const f of r.findings) {
+    evidenceRows += f.evidence.length;
+    check(`${p.id}/${f.id}: cites at least one answer`, f.evidence.length >= 1, true);
+    check(
+      `${p.id}/${f.id}: every cited answer is "yes"`,
+      f.evidence.every((e) => e.answer === 'yes'),
+      true,
+    );
+    check(`${p.id}/${f.id}: cites a source`, Boolean(f.source && f.source.key), true);
+    check(`${p.id}/${f.id}: the source exists in the table`, sourceKeys.has(f.source.key), true);
+    check(
+      `${p.id}/${f.id}: has a tier label`,
+      typeof f.tierLabel === 'string' && f.tierLabel.length > 0,
+      true,
+    );
+  }
+  for (const cv of r.caveats) {
+    check(`${p.id}/${cv.id}: cites at least one answer`, cv.evidence.length >= 1, true);
+    check(
+      `${p.id}/${cv.id}: every cited answer is "yes"`,
+      cv.evidence.every((e) => e.answer === 'yes'),
+      true,
+    );
+  }
+}
+console.log(`  checked ${evidenceRows} evidence rows`);
+
+// Findings are sorted most-serious first, which is what the banner and the
+// export both assume.
+const ordered = findings(
+  historyWith(['cc-cholesterol', 'yes'], ['sx-chest-discomfort', 'yes'], ['ls-alcohol', 'yes']),
+);
+check(
+  'findings are ordered by tier',
+  ordered.findings.map((f) => f.tier).join(','),
+  'promptly,soon,mention',
+);
+
+// ------------------------------------------------- scoring is untouched
+//
+// The load-bearing claim of this whole feature. Answering the questionnaire
+// must not move a single risk point.
+console.log('\n=== History does not affect scoring ===');
+
+for (const p of PERSONAS) {
+  const withoutHistory = { ...p };
+  delete withoutHistory.history;
+  const a = scoreAll(p);
+  const b = scoreAll(withoutHistory);
+  for (const id of ['diabetes', 'hypertension', 'cardiovascular']) {
+    check(`${p.id}/${id}: raw unchanged by history`, a[id].raw, b[id].raw);
+    check(`${p.id}/${id}: index unchanged by history`, a[id].index, b[id].index);
+    check(`${p.id}/${id}: band unchanged by history`, a[id].band, b[id].band);
+  }
+}
+
+// An all-yes history is the worst case, and must still move nothing.
+const alarming = {
+  ...PERSONA_STUDENT,
+  history: historyWith(...QUESTION_IDS.map((id) => [id, 'yes'])),
+};
+for (const id of ['diabetes', 'hypertension', 'cardiovascular']) {
+  check(
+    `all-yes history leaves ${id} raw alone`,
+    scoreAll(alarming)[id].raw,
+    scoreAll(PERSONA_STUDENT)[id].raw,
+  );
+  check(
+    `all-yes history leaves ${id} index alone`,
+    scoreAll(alarming)[id].index,
+    scoreAll(PERSONA_STUDENT)[id].index,
+  );
+}
+
+// ------------------------------------------------------ source verification
+const unverified = Object.entries(FLAGS.sources).filter(([, src]) => src.verified !== true);
+const weak = Object.entries(FLAGS.sources).filter(([, src]) => src.weak);
+console.log('\n=== Source verification ===');
+console.log(`  ${sourceKeys.size - unverified.length} of ${sourceKeys.size} sources verified`);
+if (unverified.length > 0) {
+  console.log(`  PENDING: ${unverified.map(([k]) => k).join(', ')}`);
+  console.log('  These render as "source pending verification" in the app until checked.');
+}
+if (weak.length > 0) {
+  console.log(`  FLAGGED AS WEAK: ${weak.map(([k]) => k).join(', ')}`);
+}
+
 // ------------------------------------------------------------------ done
+
 console.log(
   `\n${failures === 0 ? 'PASS' : 'FAIL'} — ${checks - failures}/${checks} checks passed\n`,
 );

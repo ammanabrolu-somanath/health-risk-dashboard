@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { BAND_STYLE } from '../../lib/format.js';
 import { RiskBadge } from './badges.jsx';
 import { ThresholdScale, RuleRowTable } from './provenance.jsx';
+import { CaveatDetail } from '../history/CaveatNotice.jsx';
 
 /**
  * The full point breakdown for one condition — every row that produced the score,
@@ -45,7 +46,7 @@ function FactorRow({ contribution, isTop }) {
   );
 }
 
-export function ContributingFactors({ result, initialProvenanceOpen = false }) {
+export function ContributingFactors({ result, initialProvenanceOpen = false, caveat }) {
   const [open, setOpen] = useState(false);
   // `initialProvenanceOpen` lets the SSR smoke test render the expanded tree.
   const [provenanceOpen, setProvenanceOpen] = useState(initialProvenanceOpen);
@@ -123,6 +124,10 @@ export function ContributingFactors({ result, initialProvenanceOpen = false }) {
 
         {provenanceOpen && (
           <div className="inset mt-3 space-y-4 p-4">
+            {/* Scope before arithmetic: if the instrument does not apply to this
+                person, that is the first thing to know about the number. */}
+            <CaveatDetail caveat={caveat} />
+
             <ThresholdScale
               thresholds={result.thresholds}
               max={result.max}

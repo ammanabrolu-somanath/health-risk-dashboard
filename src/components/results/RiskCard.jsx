@@ -2,12 +2,13 @@ import { BAND_STYLE } from '../../lib/format.js';
 import { useCountUp } from '../../hooks/useCountUp.js';
 import { RiskBadge, DeltaChip, BandTransitionPill, DistanceToBand } from './badges.jsx';
 import { ScoreTrack } from './ScoreTrack.jsx';
+import { CaveatBadge } from '../history/CaveatNotice.jsx';
 
 /**
  * One condition. In simulation mode it shows both numbers at once —
  * the old value stays on screen, greyed, so the judge sees what moved.
  */
-export function RiskCard({ detail, isSimulating }) {
+export function RiskCard({ detail, isSimulating, caveat }) {
   const { current, simulated, deltaIndex, direction, bandChanged, bandFrom, bandTo, distance } =
     detail;
 
@@ -68,18 +69,23 @@ export function RiskCard({ detail, isSimulating }) {
           No change to this risk — none of the factors you adjusted feed this score.
         </p>
       )}
+
+      {/* The score is never shown without this. Reported history can place a
+          person outside the population the instrument was built for, and that
+          has to travel with the number rather than sit in a panel below it. */}
+      <CaveatBadge caveat={caveat} />
     </article>
   );
 }
 
-export function RiskCardGrid({ summary, isSimulating }) {
+export function RiskCardGrid({ summary, isSimulating, caveats = {} }) {
   return (
     <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
       {/* The one orchestrated moment on the page: the three answers arrive left
           to right, once, on mount. Everything after that is response to input. */}
       {summary.list.map((detail, i) => (
         <div key={detail.id} className="animate-fade-up" style={{ animationDelay: `${i * 70}ms` }}>
-          <RiskCard detail={detail} isSimulating={isSimulating} />
+          <RiskCard detail={detail} isSimulating={isSimulating} caveat={caveats[detail.id]} />
         </div>
       ))}
     </div>

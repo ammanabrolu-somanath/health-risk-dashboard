@@ -41,7 +41,7 @@ single hidden "health score" wearing three hats.
 ```bash
 npm install
 npm run dev       # http://localhost:5173
-npm run verify    # 525 scoring + provenance assertions — run first if you change a rule table
+npm run verify    # 914 scoring, findings + provenance assertions — run first if you change a rule table
 npm run smoke     # renders every screen and simulation state; fails if any component throws
 npm run build
 ```
@@ -55,6 +55,8 @@ npm run build
 - **Visual comparison** of the three results.
 - **Contributing factors** — the full point breakdown per condition, with its source cited.
 - **Instant recalculation** — no submit button, no debounce.
+- **Health history questionnaire** — 23 optional questions that raise findings without touching
+  a single risk point.
 - **Data provenance** — "How was this calculated?" opens the band thresholds and the exact rule
   rows that fired.
 - **PDF export** — a consultation-style summary via the print stylesheet.
@@ -182,6 +184,78 @@ not recomputed by the UI, so the drawer is a pure renderer and cannot drift from
 it. `npm run verify` asserts, for all 104 factor evaluations across every persona, that **exactly
 one row is active** and that **the active row's points equal the score that factor contributed**.
 Without that assertion a lying drawer would look exactly like a correct one.
+
+## Health history
+
+23 optional questions — medical and family history, symptoms, chronic conditions, medications,
+surgery, infections and alcohol — asked below the results and **scored nowhere**.
+
+`scoreAll()` never reads a history answer. That is the load-bearing constraint, and it is not a
+convention: the risk index is `raw / max`, so adding even one scored factor would raise the
+denominator and silently re-scale every number in this README. `npm run verify` asserts that an
+all-yes history leaves all three raws, indices and bands identical.
+
+Every question is **Yes / No / Not sure**, with the timeframe written into the wording rather than
+asked as a second control. "Not sure" is a real answer that is counted and exported but **never
+fires a finding** — a blank is not read as a denial, which is the whole reason the third state
+exists. Questions never duplicate one of the 13 scored fields; where a topic would overlap, the
+wording excludes it and the scored field is shown read-only instead.
+
+### Findings
+
+Answers raise findings at three tiers, which describe **conversation priority, not care urgency**:
+
+| Tier | Meaning |
+|---|---|
+| Discuss promptly | Raise at the start of the next conversation with a clinician |
+| Discuss soon | Worth a dedicated conversation rather than waiting for a routine visit |
+| Worth mentioning | Useful context for a clinician already reviewing your history |
+
+The rules live in `src/data/rules/flags.rules.json` — 19 single-answer rules and 3 named
+combinations, each with a tier, a rationale and a cited source. A combination **replaces** the
+findings it supersedes rather than adding to them, so one clinical picture is raised once:
+answering yes to chest discomfort and breathlessness produces one finding, not three.
+
+The most interesting rule is C-3 — recurrent infections with changed eyesight. The diabetes
+instrument asks nothing about symptoms, so a person can score Low while reporting the pattern most
+associated with unrecognised high blood glucose. That is the argument for the whole feature: it
+surfaces what the scores structurally cannot see.
+
+A banner appears at the top of the page when anything fires and has **zero footprint when nothing
+does** — a clean profile gets a single "No findings identified" line instead. Each finding opens a
+**"Why was this flagged?"** drawer showing the answer, the rule and the source, mirroring the
+scoring drawer.
+
+### Sources are not verified yet
+
+Every citation in `flags.rules.json` carries `"verified": false`. Unverified sources render as
+**"source pending verification"** in the app and are listed by `npm run verify`, so an unchecked
+citation announces itself rather than shipping silently. Two — `S-10` (fatigue) and `S-15`
+(hospitalisation) — are additionally marked `"weak": true` and may be better downgraded to
+documentation than defended.
+
+Source quality is ranked: government health agency or professional body (T1), peer-reviewed
+guidance (T2), academic medical centre patient material (T3, only where no T1/T2 source addresses
+the wording).
+
+### Prior events
+
+A reported heart attack or stroke does not raise a finding — it is established history, not
+something to discuss. It raises a **caveat** instead: the non-laboratory Framingham model
+estimates the risk of a *first* event, so a prior event places someone outside the population it
+was built for. The caveat renders on the cardiovascular card, in the PDF results table, and in
+full inside that condition's provenance drawer. The score is never shown without it.
+
+The High-Risk Adult deliberately reports **no** prior event, and `npm run verify` asserts it. A
+caveat on that persona would mean the what-if arc ends by telling someone with established
+coronary disease that their risk is now Moderate.
+
+| Persona | Findings | Demonstrates |
+|---|---|---|
+| 🎓 Healthy College Student | none | The "No findings identified" state |
+| 💼 Busy Office Worker | 1 worth mentioning | That "Not sure" is counted but fires nothing |
+| ⚠️ High-Risk Adult | 2 worth mentioning | Findings beside a High score, arc untouched |
+| 🧓 Senior Citizen | 1 discuss promptly (C-3) | A combination rule and the prior-event caveat |
 
 ## PDF export
 
